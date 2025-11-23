@@ -1,0 +1,20 @@
+<Account>
+   <CompanyID>1564862</CompanyID>
+   <CompanyName>BockelCorp</CompanyName>
+   <Website>http://bockelcorp.net</Website>
+   <StreetAddress1>801 Cassatt Road</StreetAddress1>
+   <StreetAddress2>Suite 120</StreetAddress2>
+   <City>Berwyn</City>
+   <State>pa</State>
+   <PostalCode>19312</PostalCode>
+   <Country>USA</Country>
+   <Phone>610-854-4195</Phone>
+   <Industry>Technology</Industry>
+   <ContactList>
+      <Contact>
+         <FirstName>Pamela</FirstName>
+         <LastName>Pierce</LastName>
+         <Email>geoff@bockelcorp.net</Email>
+      </Contact>
+   </ContactList>
+</Account>
