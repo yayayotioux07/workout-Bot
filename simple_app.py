@@ -25,7 +25,7 @@ def get_exercises(muscle_group, language='en'):
         conn = connect_db()
         cur = conn.cursor()
         
-        # Query without description columns (they don't exist)
+        # Use LOWER() for case-insensitive matching
         cur.execute("""
             SELECT name_en, name_es, image_url
             FROM exercises
@@ -47,7 +47,7 @@ def get_exercises(muscle_group, language='en'):
             result.append({
                 'name': name,
                 'image_url': ex[2],
-                'description': ''  # Empty since we don't have descriptions
+                'description': ''
             })
         
         return result
@@ -205,14 +205,15 @@ def webhook():
                 "biceps": {"en": "biceps", "es": "biceps"},
                 "triceps": {"en": "triceps", "es": "triceps"},
                 "shoulders": {"en": "shoulders", "es": "hombros"},
-                "legs": {"en": "legs", "es": "piernas"},
+                "legs": {"en": "legs", "es": "pierna"},  # ✅ Changed to 'pierna' (singular)
                 "abs": {"en": "abs", "es": "abdominales"},
                 # Spanish inputs
                 "pecho": {"en": "chest", "es": "pecho"},
                 "espalda": {"en": "back", "es": "espalda"},
                 "bíceps": {"en": "biceps", "es": "biceps"},
                 "hombros": {"en": "shoulders", "es": "hombros"},
-                "piernas": {"en": "legs", "es": "piernas"},
+                "piernas": {"en": "legs", "es": "pierna"},  # ✅ Maps 'piernas' to 'pierna' in DB
+                "pierna": {"en": "legs", "es": "pierna"},   # ✅ Also accept singular
                 "abdominales": {"en": "abs", "es": "abdominales"}
             }
             
