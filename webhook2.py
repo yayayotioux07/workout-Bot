@@ -807,8 +807,3 @@ def validate_token():
         return False
 
 # Validate on startup
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    print("🚀 Starting WhatsApp Webhook Server...")
-    print(f"📍 Running on: http://0.0.0.0:{port}")
-    app.run(host='0.0.0.0', port=port, debug=False)

@@ -1186,9 +1186,3 @@ def get_workouts():
 def logout():
     session.clear()
     return redirect(url_for('home'))
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5001))
-    print("🚀 Starting Workout Tracker Web App...")
-    print(f"📍 Running on: http://0.0.0.0:{port}")
-    app.run(debug=False, port=port, host='0.0.0.0')
