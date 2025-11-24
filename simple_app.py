@@ -25,7 +25,7 @@ def get_exercises(muscle_group, language='en'):
         conn = connect_db()
         cur = conn.cursor()
         
-        # Use ILIKE for case-insensitive matching
+        # Query with exact match (case-insensitive)
         cur.execute("""
             SELECT name_en, name_es, image_url, description_en, description_es, muscle_group
             FROM exercises
@@ -35,9 +35,7 @@ def get_exercises(muscle_group, language='en'):
         
         exercises = cur.fetchall()
         
-        print(f"🔍 Query: muscle_group = '{muscle_group}', Found: {len(exercises)} exercises")
-        if len(exercises) > 0:
-            print(f"📋 First exercise muscle_group in DB: '{exercises[0][5]}'")
+        print(f"🔍 Query: muscle_group = '{muscle_group}', Lang = '{language}', Found: {len(exercises)} exercises")
         
         cur.close()
         conn.close()
@@ -157,22 +155,38 @@ def webhook():
             
             return "ok", 200
 
-        # Handle muscle group selection (NEW CODE) ✅
+        # Handle muscle group selection
         if msg_type == "text" and user_states.get(sender, {}).get("expecting_muscle"):
             lang = user_states[sender].get("lang", "en")
             
-            # Map muscle groups in both languages
-            muscle_map = {
-                "chest": "chest", "pecho": "chest",
-                "back": "back", "espalda": "back",
-                "biceps": "biceps", "bíceps": "biceps",
-                "triceps": "triceps", "tríceps": "triceps",
-                "shoulders": "shoulders", "hombros": "shoulders",
-                "legs": "legs", "piernas": "legs",
-                "abs": "abs", "abdominales": "abs"
+            # Map muscle groups - use the LANGUAGE-SPECIFIC database value
+            muscle_map_en = {
+                "chest": "chest",
+                "back": "back", 
+                "biceps": "biceps",
+                "triceps": "triceps",
+                "shoulders": "shoulders",
+                "legs": "legs",
+                "abs": "abs"
             }
             
-            muscle = muscle_map.get(text)
+            muscle_map_es = {
+                "pecho": "pecho",
+                "espalda": "espalda",
+                "biceps": "biceps",
+                "triceps": "triceps",
+                "hombros": "hombros",
+                "piernas": "piernas",
+                "abdominales": "abdominales"
+            }
+            
+            # Choose the right map based on user's language
+            if lang == "es":
+                muscle = muscle_map_es.get(text)
+            else:
+                muscle = muscle_map_en.get(text)
+            
+            print(f"🗺️ Text: '{text}', Lang: '{lang}' → Mapped to: '{muscle}'")
             
             if muscle:
                 print(f"💪 Muscle group selected: {muscle}")
