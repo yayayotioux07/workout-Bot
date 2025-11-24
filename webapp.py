@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import time
 from datetime import datetime, timedelta
+from webhook2 import webhook, webhook_verify
 
 load_dotenv()
 
@@ -1186,3 +1187,7 @@ def get_workouts():
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+# Register webhook routes
+app.add_url_rule('/webhook', 'webhook', webhook, methods=['POST'])
+app.add_url_rule('/webhook', 'webhook_verify', webhook_verify, methods=['GET'])
