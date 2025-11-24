@@ -16,7 +16,7 @@ from webhook2 import (
     get_user,
     send_language_buttons, 
     send_registration_options,
-    send_exercise_list, 
+    send_exercises_fast,  # ✅ Changed from send_exercise_list
     send_workout_logging_options,
     save_workout, 
     check_and_update_pr, 
@@ -30,7 +30,7 @@ from webapp import (
     render_error, 
     render_dashboard, 
     render_exercises,
-    get_exercises  # ✅ This is in webapp.py, not webhook2.py
+    get_exercises
 )
 
 # Create Flask app
@@ -186,7 +186,7 @@ def webhook():
                     
                     msg = {
                         "en": f"🌐 *Access Your Workout Tracker*\n\n{web_url}\n\n⏰ Link expires in 1 hour\n\n📊 View history, analytics, and personal records!\n\n💬 Type 'hi' to start a new chat session.",
-                        "es": f"🌐 *Accede a Tu Rastreador*\n\n{web_url}\n\n⏰ Enlace expira en 1 hora\n\n📊 ¡Ve historial, análisis y récords personales!\n\n💬 Escribe 'hi' para iniciar una nueva sesión de chat."
+                        "es": f"🌐 *Accede a Tu Rastreador*\n\n{web_url}\n\n⏰ Enlace expira en 1 hour\n\n📊 ¡Ve historial, análisis y récords personales!\n\n💬 Escribe 'hi' para iniciar una nueva sesión de chat."
                     }
                     send_message(sender, msg[lang])
                     
@@ -224,7 +224,7 @@ def webhook():
                     user_states[sender]["selected_muscle"] = muscle
                     user_states[sender]["expecting_muscle"] = False
                     
-                    send_exercise_list(sender, exercises, muscle, lang)
+                    send_exercises_fast(sender, exercises, muscle, lang)  # ✅ Changed here
                     send_workout_logging_options(sender, lang)
                 else:
                     msg = {
