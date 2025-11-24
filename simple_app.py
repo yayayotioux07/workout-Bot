@@ -159,50 +159,60 @@ def webhook():
         if msg_type == "text" and user_states.get(sender, {}).get("expecting_muscle"):
             lang = user_states[sender].get("lang", "en")
             
-            # Map muscle groups - use the LANGUAGE-SPECIFIC database value
-            muscle_map_en = {
-                "chest": "chest",
-                "back": "back", 
-                "biceps": "biceps",
-                "triceps": "triceps",
-                "shoulders": "shoulders",
-                "legs": "legs",
-                "abs": "abs"
+            # Combined muscle map - accepts both languages, returns DB value based on user's lang
+            muscle_translations = {
+                # English inputs
+                "chest": {"en": "chest", "es": "pecho"},
+                "back": {"en": "back", "es": "espalda"},
+                "biceps": {"en": "biceps", "es": "biceps"},
+                "triceps": {"en": "triceps", "es": "triceps"},
+                "shoulders": {"en": "shoulders", "es": "hombros"},
+                "legs": {"en": "legs", "es": "piernas"},
+                "abs": {"en": "abs", "es": "abdominales"},
+                # Spanish inputs
+                "pecho": {"en": "chest", "es": "pecho"},
+                "espalda": {"en": "back", "es": "espalda"},
+                "bíceps": {"en": "biceps", "es": "biceps"},
+                "hombros": {"en": "shoulders", "es": "hombros"},
+                "piernas": {"en": "legs", "es": "piernas"},
+                "abdominales": {"en": "abs", "es": "abdominales"}
             }
             
-            muscle_map_es = {
-                "pecho": "pecho",
-                "espalda": "espalda",
-                "biceps": "biceps",
-                "triceps": "triceps",
-                "hombros": "hombros",
-                "piernas": "piernas",
-                "abdominales": "abdominales"
-            }
+            # Get the muscle group in the database language
+            muscle_info = muscle_translations.get(text)
             
-            # Choose the right map based on user's language
-            if lang == "es":
-                muscle = muscle_map_es.get(text)
-            else:
-                muscle = muscle_map_en.get(text)
-            
-            print(f"🗺️ Text: '{text}', Lang: '{lang}' → Mapped to: '{muscle}'")
-            
-            if muscle:
-                print(f"💪 Muscle group selected: {muscle}")
-                exercises = get_exercises(muscle, lang)
+            if muscle_info:
+                # Use the database value based on user's language
+                muscle_db_value = muscle_info[lang]
+                
+                print(f"🗺️ Text: '{text}', Lang: '{lang}' → DB value: '{muscle_db_value}'")
+                print(f"💪 Searching for muscle group: {muscle_db_value}")
+                
+                exercises = get_exercises(muscle_db_value, lang)
                 
                 if exercises:
-                    user_states[sender]["selected_muscle"] = muscle
+                    user_states[sender]["selected_muscle"] = muscle_db_value
                     user_states[sender]["expecting_muscle"] = False
                     
-                    print(f"📋 Found {len(exercises)} exercises for {muscle}")
-                    send_exercises_fast(sender, exercises, muscle, lang)
+                    print(f"📋 Found {len(exercises)} exercises for {muscle_db_value}")
+                    send_exercises_fast(sender, exercises, muscle_db_value, lang)
                     send_workout_logging_options(sender, lang)
                 else:
+                    # If no exercises found, show what's actually in the database
+                    try:
+                        conn = connect_db()
+                        cur = conn.cursor()
+                        cur.execute("SELECT DISTINCT muscle_group FROM exercises ORDER BY muscle_group")
+                        db_muscles = [row[0] for row in cur.fetchall()]
+                        cur.close()
+                        conn.close()
+                        print(f"🔍 Available muscle groups in DB: {db_muscles}")
+                    except Exception as e:
+                        print(f"❌ Debug query failed: {e}")
+                    
                     msg = {
-                        "en": f"❌ No exercises found for {muscle}. Try another muscle group.",
-                        "es": f"❌ No se encontraron ejercicios para {muscle}. Prueba otro grupo muscular."
+                        "en": f"❌ No exercises found for {muscle_db_value}. Try another muscle group.",
+                        "es": f"❌ No se encontraron ejercicios para {muscle_db_value}. Prueba otro grupo muscular."
                     }
                     send_message(sender, msg[lang])
             else:
