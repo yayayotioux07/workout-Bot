@@ -58,6 +58,45 @@ def get_exercises(muscle_group, language='en'):
         traceback.print_exc()
         return []
 
+def send_exercise_images(sender, exercises, muscle_group):
+    """Send exercise images synchronously"""
+    import requests
+    
+    access_token = os.getenv('WHATSAPP_ACCESS_TOKEN')
+    phone_number_id = os.getenv('WHATSAPP_PHONE_NUMBER_ID')
+    url = f"https://graph.facebook.com/v21.0/{phone_number_id}/messages"
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    
+    print(f"📤 Sending {len(exercises)} exercise images...")
+    
+    for i, exercise in enumerate(exercises, 1):
+        try:
+            payload = {
+                "messaging_product": "whatsapp",
+                "to": sender,
+                "type": "image",
+                "image": {
+                    "link": exercise['image_url'],
+                    "caption": f"{i}. {exercise['name']}"
+                }
+            }
+            
+            response = requests.post(url, headers=headers, json=payload)
+            print(f"✅ Sent image {i}/{len(exercises)}: {exercise['name']} - Status: {response.status_code}")
+            
+            # Small delay to avoid rate limits
+            import time
+            time.sleep(0.5)
+            
+        except Exception as e:
+            print(f"❌ Failed to send image {i}: {e}")
+    
+    print(f"🎉 Finished sending {len(exercises)} images!")
+
 @app.route('/webhook', methods=['GET'])
 def webhook_verify():
     """Verify webhook for WhatsApp"""
@@ -194,16 +233,9 @@ def webhook():
                     user_states[sender]["expecting_muscle"] = False
                     
                     print(f"📋 Found {len(exercises)} exercises for {muscle_db_value}")
-                    print(f"📦 Exercise format: {exercises[0] if exercises else 'None'}")
                     
-                    try:
-                        print(f"🚀 Calling send_exercises_fast...")
-                        send_exercises_fast(sender, exercises, muscle_db_value)
-                        print(f"✅ send_exercises_fast completed")
-                    except Exception as e:
-                        print(f"❌ send_exercises_fast failed: {e}")
-                        import traceback
-                        traceback.print_exc()
+                    # ✅ Use synchronous function
+                    send_exercise_images(sender, exercises, muscle_db_value)
                     
                     send_workout_logging_options(sender, lang)
                 else:
