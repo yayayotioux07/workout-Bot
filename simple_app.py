@@ -25,14 +25,20 @@ def get_exercises(muscle_group, language='en'):
         conn = connect_db()
         cur = conn.cursor()
         
+        # Use ILIKE for case-insensitive matching
         cur.execute("""
-            SELECT name_en, name_es, image_url, description_en, description_es
+            SELECT name_en, name_es, image_url, description_en, description_es, muscle_group
             FROM exercises
-            WHERE muscle_group = %s
+            WHERE LOWER(muscle_group) = LOWER(%s)
             ORDER BY name_en
         """, (muscle_group,))
         
         exercises = cur.fetchall()
+        
+        print(f"🔍 Query: muscle_group = '{muscle_group}', Found: {len(exercises)} exercises")
+        if len(exercises) > 0:
+            print(f"📋 First exercise muscle_group in DB: '{exercises[0][5]}'")
+        
         cur.close()
         conn.close()
         
@@ -50,7 +56,9 @@ def get_exercises(muscle_group, language='en'):
         return result
         
     except Exception as e:
-        print(f"Error getting exercises: {e}")
+        print(f"❌ Error getting exercises: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 @app.route('/webhook', methods=['GET'])
