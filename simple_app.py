@@ -296,8 +296,29 @@ def webhook():
                 send_message(sender, msg[lang])
                 user_states[sender] = {
                     "lang": lang,
-                    "expecting_muscle": True  # ✅ This sets the flag
+                    "expecting_muscle": True
                 }
+                return "ok", 200
+            
+            # ✅ ADD THIS NEW HANDLER
+            elif reply_id == "start_over":
+                lang = user_states.get(sender, {}).get("lang", "en")
+                if not lang and user:
+                    lang = user[4]
+                
+                print(f"🔄 Starting over for user {sender}")
+                
+                # Reset user state but keep language
+                user_states[sender] = {
+                    "lang": lang,
+                    "expecting_muscle": True
+                }
+                
+                msg = {
+                    "en": "💪 Reply with a muscle group:\n- Chest\n- Back\n- Biceps\n- Triceps\n- Shoulders\n- Legs\n- Abs\n\n📊 Or type 'tracker' to log workouts",
+                    "es": "💪 Responde con un grupo muscular:\n- Pecho\n- Espalda\n- Biceps\n- Triceps\n- Hombros\n- Piernas\n- Abdominales\n\n📊 O escribe 'tracker' para abrir el rastreador"
+                }
+                send_message(sender, msg[lang])
                 return "ok", 200
                 
             elif reply_id == "view_web":
