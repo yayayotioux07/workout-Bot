@@ -17,8 +17,40 @@ from webhook2 import (
     user_states
 )
 
-# Import from webapp
-from webapp import get_exercises
+# Define get_exercises here (since it doesn't exist in webapp)
+def get_exercises(muscle_group, language='en'):
+    """Get exercises for a muscle group"""
+    try:
+        conn = connect_db()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT name_en, name_es, image_url, description_en, description_es
+            FROM exercises
+            WHERE muscle_group = %s
+            ORDER BY name_en
+        """, (muscle_group,))
+        
+        exercises = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        # Format exercises based on language
+        result = []
+        for ex in exercises:
+            name = ex[0] if language == 'en' else ex[1]
+            desc = ex[3] if language == 'en' else ex[4]
+            result.append({
+                'name': name,
+                'image_url': ex[2],
+                'description': desc
+            })
+        
+        return result
+        
+    except Exception as e:
+        print(f"Error getting exercises: {e}")
+        return []
 
 @app.route('/webhook', methods=['GET'])
 def webhook_verify():
