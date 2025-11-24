@@ -25,9 +25,9 @@ def get_exercises(muscle_group, language='en'):
         conn = connect_db()
         cur = conn.cursor()
         
-        # Query with exact match (case-insensitive)
+        # Query without description columns (they don't exist)
         cur.execute("""
-            SELECT name_en, name_es, image_url, description_en, description_es, muscle_group
+            SELECT name_en, name_es, image_url
             FROM exercises
             WHERE LOWER(muscle_group) = LOWER(%s)
             ORDER BY name_en
@@ -44,11 +44,10 @@ def get_exercises(muscle_group, language='en'):
         result = []
         for ex in exercises:
             name = ex[0] if language == 'en' else ex[1]
-            desc = ex[3] if language == 'en' else ex[4]
             result.append({
                 'name': name,
                 'image_url': ex[2],
-                'description': desc
+                'description': ''  # Empty since we don't have descriptions
             })
         
         return result
