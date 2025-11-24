@@ -396,5 +396,12 @@ def health():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    print(f"🚀 Starting Combined App on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=False)
+    print("=" * 50)
+    print(f"🚀 Starting Combined Workout Bot on port {port}")
+    print(f"📍 Webhook: /webhook")
+    print(f"📍 Web App: /dashboard")
+    print("=" * 50)
+    
+    # Use waitress for production
+    from waitress import serve
+    serve(app, host='0.0.0.0', port=port, threads=4)
