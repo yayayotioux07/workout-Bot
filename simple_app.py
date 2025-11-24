@@ -61,6 +61,7 @@ def get_exercises(muscle_group, language='en'):
 def send_exercise_images(sender, exercises, muscle_group):
     """Send exercise images synchronously"""
     import requests
+    import time
     
     access_token = os.getenv('WHATSAPP_ACCESS_TOKEN')
     phone_number_id = os.getenv('WHATSAPP_PHONE_NUMBER_ID')
@@ -75,6 +76,10 @@ def send_exercise_images(sender, exercises, muscle_group):
     
     for i, exercise in enumerate(exercises, 1):
         try:
+            if not exercise.get('image_url'):
+                print(f"⚠️ Skipping exercise {i}: No image URL")
+                continue
+                
             payload = {
                 "messaging_product": "whatsapp",
                 "to": sender,
@@ -86,14 +91,22 @@ def send_exercise_images(sender, exercises, muscle_group):
             }
             
             response = requests.post(url, headers=headers, json=payload)
-            print(f"✅ Sent image {i}/{len(exercises)}: {exercise['name']} - Status: {response.status_code}")
             
-            # Small delay to avoid rate limits
-            import time
+            # ✅ Show the full response for errors
+            if response.status_code == 200:
+                print(f"✅ Sent image {i}/{len(exercises)}: {exercise['name']}")
+            else:
+                print(f"❌ FAILED image {i}/{len(exercises)}: {exercise['name']}")
+                print(f"   Status: {response.status_code}")
+                print(f"   URL: {exercise['image_url']}")
+                print(f"   Error: {response.text}")
+            
             time.sleep(0.5)
             
         except Exception as e:
-            print(f"❌ Failed to send image {i}: {e}")
+            print(f"❌ Exception on image {i}: {e}")
+            import traceback
+            traceback.print_exc()
     
     print(f"🎉 Finished sending {len(exercises)} images!")
 
