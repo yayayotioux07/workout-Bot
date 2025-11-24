@@ -8,18 +8,29 @@ import psycopg2
 import time
 import secrets
 
-# Import only the functions that exist in webhook2
+# Import ONLY what exists in webhook2
 from webhook2 import (
-    connect_db, send_message, send_interactive, get_user,
-    send_language_buttons, send_registration_options,
-    get_exercises, send_exercise_list, send_workout_logging_options,
-    save_workout, check_and_update_pr, generate_web_login_token,
+    connect_db, 
+    send_message, 
+    send_interactive, 
+    get_user,
+    send_language_buttons, 
+    send_registration_options,
+    send_exercise_list, 
+    send_workout_logging_options,
+    save_workout, 
+    check_and_update_pr, 
+    generate_web_login_token,
     user_states
 )
 
 # Import from webapp
 from webapp import (
-    render_home, render_error, render_dashboard, render_exercises
+    render_home, 
+    render_error, 
+    render_dashboard, 
+    render_exercises,
+    get_exercises  # ✅ This is in webapp.py, not webhook2.py
 )
 
 # Create Flask app
