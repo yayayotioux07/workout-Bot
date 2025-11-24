@@ -194,7 +194,17 @@ def webhook():
                     user_states[sender]["expecting_muscle"] = False
                     
                     print(f"📋 Found {len(exercises)} exercises for {muscle_db_value}")
-                    send_exercises_fast(sender, exercises, muscle_db_value)
+                    print(f"📦 Exercise format: {exercises[0] if exercises else 'None'}")
+                    
+                    try:
+                        print(f"🚀 Calling send_exercises_fast...")
+                        send_exercises_fast(sender, exercises, muscle_db_value)
+                        print(f"✅ send_exercises_fast completed")
+                    except Exception as e:
+                        print(f"❌ send_exercises_fast failed: {e}")
+                        import traceback
+                        traceback.print_exc()
+                    
                     send_workout_logging_options(sender, lang)
                 else:
                     # If no exercises found, show what's actually in the database
