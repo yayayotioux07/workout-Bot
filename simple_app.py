@@ -14,10 +14,11 @@ from webhook2 import (
     connect_db, send_message, send_interactive, get_user,
     send_language_buttons, send_registration_options,
     send_workout_logging_options, generate_web_login_token,
+    send_exercises_fast,  # ✅ Add this import
     user_states
 )
 
-# Define get_exercises here (since it doesn't exist in webapp)
+# Define get_exercises here
 def get_exercises(muscle_group, language='en'):
     """Get exercises for a muscle group"""
     try:
@@ -148,6 +149,49 @@ def webhook():
             
             return "ok", 200
 
+        # Handle muscle group selection (NEW CODE) ✅
+        if msg_type == "text" and user_states.get(sender, {}).get("expecting_muscle"):
+            lang = user_states[sender].get("lang", "en")
+            
+            # Map muscle groups in both languages
+            muscle_map = {
+                "chest": "chest", "pecho": "chest",
+                "back": "back", "espalda": "back",
+                "biceps": "biceps", "bíceps": "biceps",
+                "triceps": "triceps", "tríceps": "triceps",
+                "shoulders": "shoulders", "hombros": "shoulders",
+                "legs": "legs", "piernas": "legs",
+                "abs": "abs", "abdominales": "abs"
+            }
+            
+            muscle = muscle_map.get(text)
+            
+            if muscle:
+                print(f"💪 Muscle group selected: {muscle}")
+                exercises = get_exercises(muscle, lang)
+                
+                if exercises:
+                    user_states[sender]["selected_muscle"] = muscle
+                    user_states[sender]["expecting_muscle"] = False
+                    
+                    print(f"📋 Found {len(exercises)} exercises for {muscle}")
+                    send_exercises_fast(sender, exercises, muscle, lang)
+                    send_workout_logging_options(sender, lang)
+                else:
+                    msg = {
+                        "en": f"❌ No exercises found for {muscle}. Try another muscle group.",
+                        "es": f"❌ No se encontraron ejercicios para {muscle}. Prueba otro grupo muscular."
+                    }
+                    send_message(sender, msg[lang])
+            else:
+                msg = {
+                    "en": "❌ Invalid muscle group. Please choose: Chest, Back, Biceps, Triceps, Shoulders, Legs, or Abs",
+                    "es": "❌ Grupo muscular inválido. Elige: Pecho, Espalda, Biceps, Triceps, Hombros, Piernas o Abdominales"
+                }
+                send_message(sender, msg[lang])
+            
+            return "ok", 200
+
         # Handle button responses
         if msg_type == "interactive":
             button_reply = message["interactive"]
@@ -179,7 +223,7 @@ def webhook():
                 send_message(sender, msg[lang])
                 user_states[sender] = {
                     "lang": lang,
-                    "expecting_muscle": True
+                    "expecting_muscle": True  # ✅ This sets the flag
                 }
                 return "ok", 200
                 
