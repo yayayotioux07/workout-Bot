@@ -685,7 +685,7 @@ def view_exercises(muscle_group):
                     <h3>{exercise_name}</h3>
                     <p class="equipment">Equipment: {equipment}</p>
                     {gif_section}
-                    <button class="log-btn" onclick="logExercise('{exercise_name}', '{muscle_group}')">
+                    <button class="log-btn" onclick="window.location.href='/log-exercise/{muscle_group}/{exercise_name}'">
                         Log This Exercise
                     </button>
                 </div>
@@ -843,169 +843,371 @@ def view_exercises(muscle_group):
         traceback.print_exc()
         return f"Error: {str(e)}", 500
 
-@app.route('/log-workout')
-def log_workout_page():
-    """Workout logging form"""
+@app.route('/log-exercise/<muscle_group>/<exercise_name>')
+def log_exercise_form(muscle_group, exercise_name):
+    """Detailed exercise logging form similar to fitness apps"""
     if 'user_id' not in session:
         return redirect(url_for('home'))
     
-    return """
+    from datetime import datetime
+    current_date = datetime.now().strftime('%b %d, %Y')
+    
+    return f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Log Workout</title>
+        <title>Log {exercise_name}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body {
+            * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+            body {{
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 background: #f5f7fa;
                 min-height: 100vh;
-                padding: 20px;
-            }
-            .container {
+                padding-bottom: 100px;
+            }}
+            .header {{
+                background: white;
+                padding: 15px 20px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }}
+            .header-content {{
                 max-width: 600px;
                 margin: 0 auto;
-                background: white;
-                padding: 30px;
-                border-radius: 15px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            }
-            h1 { color: #333; margin-bottom: 30px; }
-            .form-group {
-                margin-bottom: 20px;
-            }
-            label {
-                display: block;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }}
+            .back-btn {{
+                background: none;
+                border: none;
+                color: #667eea;
+                font-size: 1.1em;
+                cursor: pointer;
+                padding: 5px;
+            }}
+            .save-btn {{
+                background: #667eea;
+                color: white;
+                border: none;
+                padding: 8px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+            }}
+            .workout-info {{
+                max-width: 600px;
+                margin: 20px auto;
+                padding: 0 20px;
+            }}
+            .workout-title {{
+                font-size: 1.8em;
+                color: #333;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }}
+            .workout-meta {{
+                display: flex;
+                gap: 20px;
                 color: #666;
-                margin-bottom: 8px;
-                font-weight: 500;
-            }
-            input, select {
+                font-size: 0.95em;
+                margin-bottom: 30px;
+            }}
+            .meta-item {{
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }}
+            .exercise-card {{
+                background: white;
+                max-width: 600px;
+                margin: 0 auto 20px auto;
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            }}
+            .exercise-header {{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }}
+            .exercise-name {{
+                color: #667eea;
+                font-size: 1.2em;
+                font-weight: 600;
+            }}
+            .set-table {{
                 width: 100%;
-                padding: 12px;
+            }}
+            .set-header {{
+                display: grid;
+                grid-template-columns: 60px 1fr 1fr 1fr 50px;
+                gap: 10px;
+                padding: 10px 0;
+                border-bottom: 2px solid #f0f0f0;
+                font-weight: 600;
+                color: #666;
+                font-size: 0.9em;
+            }}
+            .set-row {{
+                display: grid;
+                grid-template-columns: 60px 1fr 1fr 1fr 50px;
+                gap: 10px;
+                padding: 15px 0;
+                align-items: center;
+                border-bottom: 1px solid #f5f5f5;
+            }}
+            .set-number {{
+                background: #f0f0f0;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 600;
+                color: #333;
+            }}
+            .set-input {{
+                background: #f8f9fa;
                 border: 2px solid #e0e0e0;
                 border-radius: 8px;
+                padding: 10px;
+                text-align: center;
                 font-size: 1em;
-            }
-            input:focus, select:focus {
+                font-weight: 500;
+                color: #333;
+            }}
+            .set-input:focus {{
                 outline: none;
                 border-color: #667eea;
-            }
-            .exercise-entry {
+                background: white;
+            }}
+            .rest-timer {{
+                text-align: center;
+                color: #667eea;
+                font-size: 0.9em;
+                margin-top: 10px;
+            }}
+            .check-mark {{
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                border: 2px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s;
+            }}
+            .check-mark.checked {{
+                background: #4CAF50;
+                border-color: #4CAF50;
+                color: white;
+            }}
+            .add-set-btn {{
+                width: 100%;
                 background: #f8f9fa;
-                padding: 20px;
+                border: 2px dashed #e0e0e0;
+                color: #666;
+                padding: 15px;
                 border-radius: 10px;
-                margin-bottom: 15px;
-            }
-            .sets-reps-grid {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
+                margin-top: 15px;
+                cursor: pointer;
+                font-size: 1em;
+                font-weight: 500;
+                transition: all 0.3s;
+            }}
+            .add-set-btn:hover {{
+                background: #e0e0e0;
+                border-color: #667eea;
+                color: #667eea;
+            }}
+            .bottom-bar {{
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 15px 20px;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                display: flex;
                 gap: 10px;
-            }
-            button {
+                max-width: 600px;
+                margin: 0 auto;
+            }}
+            .finish-btn {{
+                flex: 1;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
-                padding: 15px 30px;
                 border: none;
+                padding: 15px;
                 border-radius: 10px;
-                font-size: 1em;
+                font-size: 1.1em;
+                font-weight: 600;
                 cursor: pointer;
-                width: 100%;
-                margin-top: 20px;
-            }
-            button:hover {
-                opacity: 0.9;
-            }
-            .back-link {
-                color: #667eea;
-                text-decoration: none;
-                display: inline-block;
-                margin-bottom: 20px;
-            }
+            }}
+            .previous-label {{
+                color: #999;
+                font-size: 0.85em;
+            }}
+            
+            @media (max-width: 600px) {{
+                .set-header, .set-row {{
+                    grid-template-columns: 50px 1fr 1fr 1fr 40px;
+                    gap: 8px;
+                }}
+                .workout-info {{
+                    padding: 0 15px;
+                }}
+            }}
         </style>
     </head>
     <body>
-        <div class="container">
-            <a href="/dashboard" class="back-link">← Back to Dashboard</a>
-            <h1>📝 Log Workout</h1>
+        <div class="header">
+            <div class="header-content">
+                <button class="back-btn" onclick="history.back()">✕ Cancel</button>
+                <button class="save-btn" onclick="saveWorkout()">Save</button>
+            </div>
+        </div>
+        
+        <div class="workout-info">
+            <h1 class="workout-title">{exercise_name}</h1>
+            <div class="workout-meta">
+                <div class="meta-item">📅 {current_date}</div>
+                <div class="meta-item">🏋️ {muscle_group.title()}</div>
+            </div>
+        </div>
+        
+        <div class="exercise-card">
+            <div class="exercise-header">
+                <span class="exercise-name">{exercise_name}</span>
+            </div>
             
-            <form id="workoutForm">
-                <div class="form-group">
-                    <label>Muscle Group</label>
-                    <select name="muscle_group" required>
-                        <option value="">Select muscle group</option>
-                        <option value="chest">Chest</option>
-                        <option value="back">Back</option>
-                        <option value="legs">Legs</option>
-                        <option value="shoulders">Shoulders</option>
-                        <option value="biceps">Biceps</option>
-                        <option value="triceps">Triceps</option>
-                        <option value="abs">Abs</option>
-                    </select>
+            <div class="set-table">
+                <div class="set-header">
+                    <div>Set</div>
+                    <div>Previous</div>
+                    <div>lbs</div>
+                    <div>Reps</div>
+                    <div>✓</div>
                 </div>
                 
-                <div id="exercises">
-                    <div class="exercise-entry">
-                        <div class="form-group">
-                            <label>Exercise Name</label>
-                            <input type="text" name="exercise_name[]" placeholder="e.g., Bench Press" required>
-                        </div>
-                        <div class="sets-reps-grid">
-                            <div class="form-group">
-                                <label>Sets</label>
-                                <input type="number" name="sets[]" placeholder="3" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Reps</label>
-                                <input type="number" name="reps[]" placeholder="10" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Weight (kg)</label>
-                                <input type="number" step="0.5" name="weight[]" placeholder="60" required>
-                            </div>
-                        </div>
+                <div id="setsContainer">
+                    <div class="set-row">
+                        <div class="set-number">1</div>
+                        <div class="previous-label">—</div>
+                        <input type="number" class="set-input weight-input" placeholder="0" step="0.5">
+                        <input type="number" class="set-input reps-input" placeholder="0">
+                        <div class="check-mark" onclick="toggleCheck(this)"></div>
                     </div>
+                    <div class="rest-timer">2:00</div>
+                    
+                    <div class="set-row">
+                        <div class="set-number">2</div>
+                        <div class="previous-label">—</div>
+                        <input type="number" class="set-input weight-input" placeholder="0" step="0.5">
+                        <input type="number" class="set-input reps-input" placeholder="0">
+                        <div class="check-mark" onclick="toggleCheck(this)"></div>
+                    </div>
+                    <div class="rest-timer">2:00</div>
+                    
+                    <div class="set-row">
+                        <div class="set-number">3</div>
+                        <div class="previous-label">—</div>
+                        <input type="number" class="set-input weight-input" placeholder="0" step="0.5">
+                        <input type="number" class="set-input reps-input" placeholder="0">
+                        <div class="check-mark" onclick="toggleCheck(this)"></div>
+                    </div>
+                    <div class="rest-timer">2:00</div>
                 </div>
                 
-                <button type="button" onclick="addExercise()" style="background: #28a745;">+ Add Another Exercise</button>
-                <button type="submit">Save Workout</button>
-            </form>
+                <button class="add-set-btn" onclick="addSet()">+ Add Set (2:00)</button>
+            </div>
+        </div>
+        
+        <div class="bottom-bar">
+            <button class="finish-btn" onclick="saveWorkout()">Finish Workout 💪</button>
         </div>
         
         <script>
-            function addExercise() {
-                const exercisesDiv = document.getElementById('exercises');
-                const newExercise = document.querySelector('.exercise-entry').cloneNode(true);
-                newExercise.querySelectorAll('input').forEach(input => input.value = '');
-                exercisesDiv.appendChild(newExercise);
-            }
+            let setCount = 3;
             
-            document.getElementById('workoutForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
+            function toggleCheck(element) {{
+                element.classList.toggle('checked');
+                if (element.classList.contains('checked')) {{
+                    element.innerHTML = '✓';
+                }} else {{
+                    element.innerHTML = '';
+                }}
+            }}
+            
+            function addSet() {{
+                setCount++;
+                const container = document.getElementById('setsContainer');
                 
-                const response = await fetch('/api/log-workout', {
+                const setRow = document.createElement('div');
+                setRow.className = 'set-row';
+                setRow.innerHTML = `
+                    <div class="set-number">${{setCount}}</div>
+                    <div class="previous-label">—</div>
+                    <input type="number" class="set-input weight-input" placeholder="0" step="0.5">
+                    <input type="number" class="set-input reps-input" placeholder="0">
+                    <div class="check-mark" onclick="toggleCheck(this)"></div>
+                `;
+                
+                const restTimer = document.createElement('div');
+                restTimer.className = 'rest-timer';
+                restTimer.textContent = '2:00';
+                
+                container.appendChild(setRow);
+                container.appendChild(restTimer);
+            }}
+            
+            async function saveWorkout() {{
+                const setRows = document.querySelectorAll('.set-row');
+                const exercises = [];
+                
+                setRows.forEach((row, index) => {{
+                    const weight = row.querySelector('.weight-input').value;
+                    const reps = row.querySelector('.reps-input').value;
+                    const checked = row.querySelector('.check-mark').classList.contains('checked');
+                    
+                    if (weight && reps && checked) {{
+                        exercises.push({{
+                            name: '{exercise_name}',
+                            sets: 1,
+                            reps: parseInt(reps),
+                            weight: parseFloat(weight)
+                        }});
+                    }}
+                }});
+                
+                if (exercises.length === 0) {{
+                    alert('⚠️ Please complete at least one set!');
+                    return;
+                }}
+                
+                const response = await fetch('/api/log-workout', {{
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        muscle_group: formData.get('muscle_group'),
-                        exercises: formData.getAll('exercise_name[]').map((name, i) => ({
-                            name: name,
-                            sets: parseInt(formData.getAll('sets[]')[i]),
-                            reps: parseInt(formData.getAll('reps[]')[i]),
-                            weight: parseFloat(formData.getAll('weight[]')[i])
-                        }))
-                    })
-                });
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{
+                        muscle_group: '{muscle_group}',
+                        exercises: exercises
+                    }})
+                }});
                 
-                if (response.ok) {
-                    alert('Workout logged successfully! 🎉');
+                if (response.ok) {{
+                    alert('✅ Workout logged successfully!');
                     window.location.href = '/dashboard';
-                } else {
-                    alert('Error logging workout. Please try again.');
-                }
-            });
+                }} else {{
+                    alert('❌ Error logging workout');
+                }}
+            }}
         </script>
     </body>
     </html>
@@ -1059,9 +1261,9 @@ def api_log_workout():
                 """, (session['user_id'], exercise['name'], exercise['weight'], 
                       exercise['reps'], exercise['weight'], exercise['reps']))
     
-        conn.commit()
-        cur.close()
-        conn.close()
+        conn.commit();
+        cur.close();
+        conn.close();
         
         return jsonify({"success": True})
         
