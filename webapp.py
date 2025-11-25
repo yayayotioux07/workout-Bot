@@ -945,7 +945,7 @@ def log_exercise_form(muscle_group, exercise_name):
             }}
             .set-header {{
                 display: grid;
-                grid-template-columns: 60px 1fr 1fr 1fr 50px;
+                grid-template-columns: 60px 1fr 1fr 50px;
                 gap: 10px;
                 padding: 10px 0;
                 border-bottom: 2px solid #f0f0f0;
@@ -955,7 +955,7 @@ def log_exercise_form(muscle_group, exercise_name):
             }}
             .set-row {{
                 display: grid;
-                grid-template-columns: 60px 1fr 1fr 1fr 50px;
+                grid-template-columns: 60px 1fr 1fr 50px;
                 gap: 10px;
                 padding: 15px 0;
                 align-items: center;
@@ -986,12 +986,6 @@ def log_exercise_form(muscle_group, exercise_name):
                 outline: none;
                 border-color: #667eea;
                 background: white;
-            }}
-            .rest-timer {{
-                text-align: center;
-                color: #667eea;
-                font-size: 0.9em;
-                margin-top: 10px;
             }}
             .check-mark {{
                 width: 30px;
@@ -1051,14 +1045,10 @@ def log_exercise_form(muscle_group, exercise_name):
                 font-weight: 600;
                 cursor: pointer;
             }}
-            .previous-label {{
-                color: #999;
-                font-size: 0.85em;
-            }}
             
             @media (max-width: 600px) {{
                 .set-header, .set-row {{
-                    grid-template-columns: 50px 1fr 1fr 1fr 40px;
+                    grid-template-columns: 50px 1fr 1fr 40px;
                     gap: 8px;
                 }}
                 .workout-info {{
@@ -1091,7 +1081,6 @@ def log_exercise_form(muscle_group, exercise_name):
             <div class="set-table">
                 <div class="set-header">
                     <div>Set</div>
-                    <div>Previous</div>
                     <div>lbs</div>
                     <div>Reps</div>
                     <div>✓</div>
@@ -1100,33 +1089,27 @@ def log_exercise_form(muscle_group, exercise_name):
                 <div id="setsContainer">
                     <div class="set-row">
                         <div class="set-number">1</div>
-                        <div class="previous-label">—</div>
                         <input type="number" class="set-input weight-input" placeholder="0" step="0.5">
                         <input type="number" class="set-input reps-input" placeholder="0">
                         <div class="check-mark" onclick="toggleCheck(this)"></div>
                     </div>
-                    <div class="rest-timer">2:00</div>
                     
                     <div class="set-row">
                         <div class="set-number">2</div>
-                        <div class="previous-label">—</div>
                         <input type="number" class="set-input weight-input" placeholder="0" step="0.5">
                         <input type="number" class="set-input reps-input" placeholder="0">
                         <div class="check-mark" onclick="toggleCheck(this)"></div>
                     </div>
-                    <div class="rest-timer">2:00</div>
                     
                     <div class="set-row">
                         <div class="set-number">3</div>
-                        <div class="previous-label">—</div>
                         <input type="number" class="set-input weight-input" placeholder="0" step="0.5">
                         <input type="number" class="set-input reps-input" placeholder="0">
                         <div class="check-mark" onclick="toggleCheck(this)"></div>
                     </div>
-                    <div class="rest-timer">2:00</div>
                 </div>
                 
-                <button class="add-set-btn" onclick="addSet()">+ Add Set (2:00)</button>
+                <button class="add-set-btn" onclick="addSet()">+ Add Set</button>
             </div>
         </div>
         
@@ -1154,18 +1137,12 @@ def log_exercise_form(muscle_group, exercise_name):
                 setRow.className = 'set-row';
                 setRow.innerHTML = `
                     <div class="set-number">${{setCount}}</div>
-                    <div class="previous-label">—</div>
                     <input type="number" class="set-input weight-input" placeholder="0" step="0.5">
                     <input type="number" class="set-input reps-input" placeholder="0">
                     <div class="check-mark" onclick="toggleCheck(this)"></div>
                 `;
                 
-                const restTimer = document.createElement('div');
-                restTimer.className = 'rest-timer';
-                restTimer.textContent = '2:00';
-                
                 container.appendChild(setRow);
-                container.appendChild(restTimer);
             }}
             
             async function saveWorkout() {{
