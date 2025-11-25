@@ -400,11 +400,6 @@ def render_dashboard(name, workouts, records, stats):
                 align-items: center;
             }}
             h1 {{ font-size: 1.8em; }}
-            .header-buttons {{
-                display: flex;
-                gap: 15px;
-                align-items: center;
-            }}
             .logout-btn {{
                 background: rgba(255,255,255,0.2);
                 color: white;
@@ -416,24 +411,7 @@ def render_dashboard(name, workouts, records, stats):
             .logout-btn:hover {{
                 background: rgba(255,255,255,0.3);
             }}
-            .coffee-btn {{
-                background: #FFDD00;
-                color: #000;
-                padding: 10px 20px;
-                text-decoration: none;
-                border-radius: 8px;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                transition: all 0.3s;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            }}
-            .coffee-btn:hover {{
-                background: #FFED4E;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            }}
+            
             .container {{
                 max-width: 1200px;
                 margin: 30px auto;
@@ -605,39 +583,6 @@ def render_dashboard(name, workouts, records, stats):
                 color: #999;
             }}
             
-            /* Support banner */
-            .support-banner {{
-                background: linear-gradient(135deg, #FFDD00 0%, #FFA500 100%);
-                padding: 20px;
-                border-radius: 15px;
-                text-align: center;
-                margin-bottom: 30px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }}
-            .support-banner p {{
-                color: #333;
-                margin-bottom: 15px;
-                font-size: 1.1em;
-            }}
-            .coffee-btn-large {{
-                background: white;
-                color: #000;
-                padding: 15px 30px;
-                text-decoration: none;
-                border-radius: 10px;
-                font-weight: 600;
-                display: inline-flex;
-                align-items: center;
-                gap: 10px;
-                transition: all 0.3s;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                font-size: 1.1em;
-            }}
-            .coffee-btn-large:hover {{
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            }}
-            
             @media (max-width: 768px) {{
                 .content-grid {{
                     grid-template-columns: 1fr;
@@ -646,14 +591,6 @@ def render_dashboard(name, workouts, records, stats):
                     flex-direction: column;
                     gap: 15px;
                     text-align: center;
-                }}
-                .header-buttons {{
-                    flex-direction: column;
-                    width: 100%;
-                }}
-                .coffee-btn, .logout-btn {{
-                    width: 100%;
-                    justify-content: center;
                 }}
                 .muscle-grid {{
                     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -665,23 +602,11 @@ def render_dashboard(name, workouts, records, stats):
         <div class="header">
             <div class="header-content">
                 <h1>💪 {name}'s Workout Tracker</h1>
-                <div class="header-buttons">
-                    <a href="https://buymeacoffee.com/yourprofile" target="_blank" class="coffee-btn">
-                        ☕ Buy Me a Coffee
-                    </a>
-                    <a href="/logout" class="logout-btn">Logout</a>
-                </div>
+                <a href="/logout" class="logout-btn">Logout</a>
             </div>
         </div>
         
         <div class="container">
-            <div class="support-banner">
-                <p>☕ Enjoying the app? Support the project!</p>
-                <a href="https://buymeacoffee.com/yourprofile" target="_blank" class="coffee-btn-large">
-                    ☕ Buy Me a Coffee
-                </a>
-            </div>
-            
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-value">{total_workouts}</span>
@@ -766,7 +691,7 @@ def view_exercises(muscle_group):
                 </div>
             </div>
             """
-        
+    
         return f"""
         <!DOCTYPE html>
         <html>
@@ -1133,7 +1058,7 @@ def api_log_workout():
                     DO UPDATE SET weight = %s, reps = %s, date_achieved = CURRENT_DATE
                 """, (session['user_id'], exercise['name'], exercise['weight'], 
                       exercise['reps'], exercise['weight'], exercise['reps']))
-        
+    
         conn.commit()
         cur.close()
         conn.close()
