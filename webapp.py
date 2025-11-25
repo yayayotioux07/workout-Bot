@@ -1057,7 +1057,7 @@ def log_exercise_form(muscle_group, exercise_name):
                 max-width: 600px;
                 margin: 0 auto;
             }}
-            .finish-btn {
+            .finish-btn {{
                 width: 100%;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
@@ -1067,73 +1067,73 @@ def log_exercise_form(muscle_group, exercise_name):
                 font-size: 1.1em;
                 font-weight: 600;
                 cursor: pointer;
-            }
+            }}
             
-            @media (max-width: 600px) {
-                .workout-info {
+            @media (max-width: 600px) {{
+                .workout-info {{
                     padding: 0 15px;
-                }
-                .workout-title {
+                }}
+                .workout-title {{
                     font-size: 1.4em;
-                }
-                .workout-meta {
+                }}
+                .workout-meta {{
                     gap: 15px;
                     font-size: 0.9em;
-                }
-                .exercise-card {
+                }}
+                .exercise-card {{
                     margin: 0 15px 20px 15px;
                     padding: 15px;
-                }
-                .set-header {
+                }}
+                .set-header {{
                     grid-template-columns: 45px 90px 90px 45px;
                     gap: 8px;
                     font-size: 0.85em;
-                }
-                .set-row {
+                }}
+                .set-row {{
                     grid-template-columns: 45px 90px 90px 45px;
                     gap: 8px;
                     padding: 12px 0;
-                }
-                .set-number {
+                }}
+                .set-number {{
                     width: 35px;
                     height: 35px;
                     font-size: 0.9em;
-                }
-                .set-input {
+                }}
+                .set-input {{
                     padding: 8px 4px;
                     font-size: 0.95em;
-                }
-                .check-mark {
+                }}
+                .check-mark {{
                     width: 28px;
                     height: 28px;
-                }
-                .add-set-btn {
+                }}
+                .add-set-btn {{
                     padding: 12px;
                     font-size: 0.95em;
-                }
-                .bottom-bar {
+                }}
+                .bottom-bar {{
                     padding: 12px 15px;
-                }
-                .finish-btn {
+                }}
+                .finish-btn {{
                     padding: 14px;
                     font-size: 1em;
-                }
-            }
+                }}
+            }}
             
-            @media (max-width: 400px) {
-                .set-header {
+            @media (max-width: 400px) {{
+                .set-header {{
                     grid-template-columns: 40px 80px 80px 40px;
                     gap: 6px;
-                }
-                .set-row {
+                }}
+                .set-row {{
                     grid-template-columns: 40px 80px 80px 40px;
                     gap: 6px;
-                }
-                .set-input {
+                }}
+                .set-input {{
                     padding: 6px 2px;
                     font-size: 0.9em;
-                }
-            }
+                }}
+            }}
         </style>
     </head>
     <body>
