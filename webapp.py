@@ -850,7 +850,8 @@ def log_exercise_form(muscle_group, exercise_name):
         return redirect(url_for('home'))
     
     from datetime import datetime
-    current_date = datetime.now().strftime('%b %d, %Y')
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    display_date = datetime.now().strftime('%b %d, %Y')
     
     return f"""
     <!DOCTYPE html>
@@ -920,6 +921,19 @@ def log_exercise_form(muscle_group, exercise_name):
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                cursor: pointer;
+            }}
+            .meta-item:hover {{
+                color: #667eea;
+            }}
+            .date-picker {{
+                display: none;
+                border: 2px solid #667eea;
+                border-radius: 8px;
+                padding: 8px;
+                font-size: 1em;
+                color: #333;
+                background: white;
             }}
             .exercise-card {{
                 background: white;
@@ -952,6 +966,12 @@ def log_exercise_form(muscle_group, exercise_name):
                 font-weight: 600;
                 color: #666;
                 font-size: 0.9em;
+            }}
+            .set-header > div {{
+                text-align: center;
+            }}
+            .set-header > div:first-child {{
+                text-align: left;
             }}
             .set-row {{
                 display: grid;
@@ -997,6 +1017,7 @@ def log_exercise_form(muscle_group, exercise_name):
                 justify-content: center;
                 cursor: pointer;
                 transition: all 0.3s;
+                margin: 0 auto;
             }}
             .check-mark.checked {{
                 background: #4CAF50;
@@ -1068,7 +1089,11 @@ def log_exercise_form(muscle_group, exercise_name):
         <div class="workout-info">
             <h1 class="workout-title">{exercise_name}</h1>
             <div class="workout-meta">
-                <div class="meta-item">📅 {current_date}</div>
+                <div class="meta-item" onclick="toggleDatePicker()">
+                    <span>📅</span>
+                    <span id="displayDate">{display_date}</span>
+                    <input type="date" id="datePicker" class="date-picker" value="{current_date}" onchange="updateDate(this)">
+                </div>
                 <div class="meta-item">🏋️ {muscle_group.title()}</div>
             </div>
         </div>
@@ -1119,6 +1144,26 @@ def log_exercise_form(muscle_group, exercise_name):
         
         <script>
             let setCount = 3;
+            let selectedDate = '{current_date}';
+            
+            function toggleDatePicker() {{
+                const picker = document.getElementById('datePicker');
+                if (picker.style.display === 'none' || picker.style.display === '') {{
+                    picker.style.display = 'inline-block';
+                    picker.focus();
+                    picker.click();
+                }} else {{
+                    picker.style.display = 'none';
+                }}
+            }}
+            
+            function updateDate(picker) {{
+                selectedDate = picker.value;
+                const date = new Date(picker.value + 'T00:00:00');
+                const options = {{ year: 'numeric', month: 'short', day: 'numeric' }};
+                document.getElementById('displayDate').textContent = date.toLocaleDateString('en-US', options);
+                picker.style.display = 'none';
+            }}
             
             function toggleCheck(element) {{
                 element.classList.toggle('checked');
@@ -1174,7 +1219,8 @@ def log_exercise_form(muscle_group, exercise_name):
                     headers: {{'Content-Type': 'application/json'}},
                     body: JSON.stringify({{
                         muscle_group: '{muscle_group}',
-                        exercises: exercises
+                        exercises: exercises,
+                        workout_date: selectedDate
                     }})
                 }});
                 
@@ -1200,16 +1246,17 @@ def api_log_workout():
         data = request.json
         muscle_group = data['muscle_group']
         exercises = data['exercises']
+        workout_date = data.get('workout_date', datetime.now().strftime('%Y-%m-%d'))
         
         conn = connect_db()
         cur = conn.cursor()
         
-        # Create workout
+        # Create workout with custom date
         cur.execute("""
             INSERT INTO workouts (user_id, workout_date, muscle_group)
-            VALUES (%s, CURRENT_DATE, %s)
+            VALUES (%s, %s, %s)
             RETURNING id
-        """, (session['user_id'], muscle_group))
+        """, (session['user_id'], workout_date, muscle_group))
         
         workout_id = cur.fetchone()[0]
         
@@ -1234,13 +1281,13 @@ def api_log_workout():
                     INSERT INTO personal_records (user_id, exercise_name, weight, reps)
                     VALUES (%s, %s, %s, %s)
                     ON CONFLICT (user_id, exercise_name)
-                    DO UPDATE SET weight = %s, reps = %s, date_achieved = CURRENT_DATE
+                    DO UPDATE SET weight = %s, reps = %s, date_achieved = %s
                 """, (session['user_id'], exercise['name'], exercise['weight'], 
-                      exercise['reps'], exercise['weight'], exercise['reps']))
-    
-        conn.commit();
-        cur.close();
-        conn.close();
+                      exercise['reps'], exercise['weight'], exercise['reps'], workout_date))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
         
         return jsonify({"success": True})
         
