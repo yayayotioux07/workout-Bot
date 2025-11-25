@@ -909,6 +909,7 @@ def log_exercise_form(muscle_group, exercise_name):
                 color: #333;
                 margin-bottom: 10px;
                 font-weight: bold;
+                line-height: 1.2;
             }}
             .workout-meta {{
                 display: flex;
@@ -916,6 +917,7 @@ def log_exercise_form(muscle_group, exercise_name):
                 color: #666;
                 font-size: 0.95em;
                 margin-bottom: 30px;
+                flex-wrap: wrap;
             }}
             .meta-item {{
                 display: flex;
@@ -956,6 +958,7 @@ def log_exercise_form(muscle_group, exercise_name):
             }}
             .set-table {{
                 width: 100%;
+                overflow-x: auto;
             }}
             .set-header {{
                 display: grid;
@@ -1001,6 +1004,7 @@ def log_exercise_form(muscle_group, exercise_name):
                 font-size: 1em;
                 font-weight: 500;
                 color: #333;
+                width: 100%;
             }}
             .set-input:focus {{
                 outline: none;
@@ -1050,13 +1054,11 @@ def log_exercise_form(muscle_group, exercise_name):
                 background: white;
                 padding: 15px 20px;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-                display: flex;
-                gap: 10px;
                 max-width: 600px;
                 margin: 0 auto;
             }}
-            .finish-btn {{
-                flex: 1;
+            .finish-btn {
+                width: 100%;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
                 border: none;
@@ -1065,17 +1067,73 @@ def log_exercise_form(muscle_group, exercise_name):
                 font-size: 1.1em;
                 font-weight: 600;
                 cursor: pointer;
-            }}
+            }
             
-            @media (max-width: 600px) {{
-                .set-header, .set-row {{
-                    grid-template-columns: 50px 1fr 1fr 40px;
-                    gap: 8px;
-                }}
-                .workout-info {{
+            @media (max-width: 600px) {
+                .workout-info {
                     padding: 0 15px;
-                }}
-            }}
+                }
+                .workout-title {
+                    font-size: 1.4em;
+                }
+                .workout-meta {
+                    gap: 15px;
+                    font-size: 0.9em;
+                }
+                .exercise-card {
+                    margin: 0 15px 20px 15px;
+                    padding: 15px;
+                }
+                .set-header {
+                    grid-template-columns: 45px 90px 90px 45px;
+                    gap: 8px;
+                    font-size: 0.85em;
+                }
+                .set-row {
+                    grid-template-columns: 45px 90px 90px 45px;
+                    gap: 8px;
+                    padding: 12px 0;
+                }
+                .set-number {
+                    width: 35px;
+                    height: 35px;
+                    font-size: 0.9em;
+                }
+                .set-input {
+                    padding: 8px 4px;
+                    font-size: 0.95em;
+                }
+                .check-mark {
+                    width: 28px;
+                    height: 28px;
+                }
+                .add-set-btn {
+                    padding: 12px;
+                    font-size: 0.95em;
+                }
+                .bottom-bar {
+                    padding: 12px 15px;
+                }
+                .finish-btn {
+                    padding: 14px;
+                    font-size: 1em;
+                }
+            }
+            
+            @media (max-width: 400px) {
+                .set-header {
+                    grid-template-columns: 40px 80px 80px 40px;
+                    gap: 6px;
+                }
+                .set-row {
+                    grid-template-columns: 40px 80px 80px 40px;
+                    gap: 6px;
+                }
+                .set-input {
+                    padding: 6px 2px;
+                    font-size: 0.9em;
+                }
+            }
         </style>
     </head>
     <body>
@@ -1285,9 +1343,9 @@ def api_log_workout():
                 """, (session['user_id'], exercise['name'], exercise['weight'], 
                       exercise['reps'], exercise['weight'], exercise['reps'], workout_date))
         
-        conn.commit()
-        cur.close()
-        conn.close()
+        conn.commit();
+        cur.close();
+        conn.close();
         
         return jsonify({"success": True})
         
