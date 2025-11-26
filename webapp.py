@@ -945,9 +945,11 @@ def log_exercise_form(muscle_group, exercise_name):
             .date-picker {{
                 position: absolute;
                 opacity: 0;
-                pointer-events: none;
-                width: 0;
-                height: 0;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                cursor: pointer;
             }}
             .exercise-card {{
                 background: white;
@@ -1219,8 +1221,20 @@ def log_exercise_form(muscle_group, exercise_name):
             
             function toggleDatePicker() {{
                 const picker = document.getElementById('datePicker');
-                // Just trigger the native date picker
-                picker.showPicker();
+                // Try modern API first, fallback to click
+                if (picker.showPicker) {{
+                    try {{
+                        picker.showPicker();
+                    }} catch (e) {{
+                        // Fallback for browsers that don't support showPicker
+                        picker.focus();
+                        picker.click();
+                    }}
+                }} else {{
+                    // Fallback for older browsers
+                    picker.focus();
+                    picker.click();
+                }}
             }}
             
             function updateDate(picker) {{
