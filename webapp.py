@@ -668,6 +668,7 @@ def view_exercises(muscle_group):
             SELECT DISTINCT name_en, name_es, equipment, image_url, gif_url 
             FROM exercises 
             WHERE LOWER(muscle_group) = LOWER(%s)
+            AND (language = 'en' OR language IS NULL)
             ORDER BY name_en
         """, (muscle_group,))
         
