@@ -679,11 +679,34 @@ def webhook():
                     "expecting_muscle": True
                 }
                 
-                msg = {
-                    "en": "💪 Reply with a muscle group:\n- Chest\n- Back\n- Biceps\n- Triceps\n- Shoulders\n- Legs\n- Abs",
-                    "es": "💪 Responde con un grupo muscular:\n- Pecho\n- Espalda\n- Biceps\n- Triceps\n- Hombros\n- Piernas\n- Abdominales"
+                # Send muscle group options with tracker button
+                text = {
+                    "en": "💪 Choose a muscle group:\n- Chest\n- Back\n- Biceps\n- Triceps\n- Shoulders\n- Legs\n- Abs",
+                    "es": "💪 Elige un grupo muscular:\n- Pecho\n- Espalda\n- Biceps\n- Triceps\n- Hombros\n- Piernas\n- Abdominales"
                 }
-                send_message(sender, msg[lang])
+                
+                buttons = {
+                    "en": [
+                        {"type": "reply", "reply": {"id": "view_web", "title": "Open Tracker"}}
+                    ],
+                    "es": [
+                        {"type": "reply", "reply": {"id": "view_web", "title": "Abrir Tracker"}}
+                    ]
+                }
+                
+                payload = {
+                    "messaging_product": "whatsapp",
+                    "to": sender,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "button",
+                        "body": {"text": text[lang]},
+                        "action": {
+                            "buttons": buttons[lang]
+                        }
+                    }
+                }
+                send_interactive(payload)
                 return "ok", 200
 
             elif reply_id == "log_out":
