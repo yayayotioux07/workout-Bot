@@ -944,15 +944,10 @@ def log_exercise_form(muscle_group, exercise_name):
             }}
             .date-picker {{
                 position: absolute;
-                border: 2px solid #667eea;
-                border-radius: 8px;
-                padding: 8px;
-                font-size: 1em;
-                color: #333;
-                background: white;
-                cursor: pointer;
-                z-index: 1000;
-                margin-top: 5px;
+                opacity: 0;
+                pointer-events: none;
+                width: 0;
+                height: 0;
             }}
             .exercise-card {{
                 background: white;
