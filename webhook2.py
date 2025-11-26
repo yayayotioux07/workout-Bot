@@ -103,35 +103,14 @@ def send_language_buttons(to):
     send_interactive(payload)
 
 def send_registration_options(to, lang):
+    """Send main menu after user is already registered"""
     text = {
-        "en": "You're already registered. Would you like to re-register or continue with workouts?",
-        "es": "Ya estás registrado. ¿Deseas volver a registrar o continuar con entrenamientos?"
+        "en": "Welcome back! 👋",
+        "es": "¡Bienvenido de nuevo! 👋"
     }
-    
-    buttons = {
-        "en": [
-            {"type": "reply", "reply": {"id": "re_register", "title": "Re-register"}},
-            {"type": "reply", "reply": {"id": "continue", "title": "Continue"}}
-        ],
-        "es": [
-            {"type": "reply", "reply": {"id": "re_register", "title": "Re-registrar"}},
-            {"type": "reply", "reply": {"id": "continue", "title": "Continuar"}}
-        ]
-    }
-    
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": to,
-        "type": "interactive",
-        "interactive": {
-            "type": "button",
-            "body": {"text": text[lang]},
-            "action": {
-                "buttons": buttons[lang]
-            }
-        }
-    }
-    send_interactive(payload)
+    send_message(to, text[lang])
+    # Show main menu
+    send_workout_logging_options(to, lang)
 
 def send_reset_options(to, lang):
     text = {
@@ -286,20 +265,35 @@ async def send_image_async(session, to, image_url, caption):
         return False
 
 def send_workout_logging_options(to, lang):
-    """Send options after showing exercises"""
+    """Send main menu options"""
     text = {
-        "en": "Ready to track your progress?",
-        "es": "¿Listo para rastrear tu progreso?"
+        "en": "What would you like to do?",
+        "es": "¿Qué te gustaría hacer?"
     }
     
-    buttons = {
+    # WhatsApp allows max 3 buttons, so we'll use a list message instead for 4 options
+    sections = {
         "en": [
-            {"type": "reply", "reply": {"id": "view_web", "title": "Open Tracker"}},
-            {"type": "reply", "reply": {"id": "start_over", "title": "Start Over"}}
+            {
+                "title": "Menu Options",
+                "rows": [
+                    {"id": "reregister", "title": "Re-Register", "description": "Update your information"},
+                    {"id": "view_exercises", "title": "View Exercises", "description": "Browse exercise library"},
+                    {"id": "view_web", "title": "Open Dashboard", "description": "Track your workouts"},
+                    {"id": "log_out", "title": "Log Out", "description": "End your session"}
+                ]
+            }
         ],
         "es": [
-            {"type": "reply", "reply": {"id": "view_web", "title": "Abrir Tracker"}},
-            {"type": "reply", "reply": {"id": "start_over", "title": "Empezar de Nuevo"}}
+            {
+                "title": "Opciones del Menú",
+                "rows": [
+                    {"id": "reregister", "title": "Re-Registrarse", "description": "Actualizar tu información"},
+                    {"id": "view_exercises", "title": "Ver Ejercicios", "description": "Explorar biblioteca"},
+                    {"id": "view_web", "title": "Abrir Dashboard", "description": "Rastrear entrenamientos"},
+                    {"id": "log_out", "title": "Cerrar Sesión", "description": "Terminar tu sesión"}
+                ]
+            }
         ]
     }
     
@@ -308,10 +302,12 @@ def send_workout_logging_options(to, lang):
         "to": to,
         "type": "interactive",
         "interactive": {
-            "type": "button",
+            "type": "list",
+            "header": {"type": "text", "text": "💪 Workout Bot"},
             "body": {"text": text[lang]},
             "action": {
-                "buttons": buttons[lang]
+                "button": "Menu" if lang == "en" else "Menú",
+                "sections": sections[lang]
             }
         }
     }
@@ -552,7 +548,14 @@ def webhook():
 
         # Handle interactive messages
         if msg_type == "interactive":
-            reply_id = message["interactive"]["button_reply"]["id"]
+            # Handle both button replies and list replies
+            if "button_reply" in message["interactive"]:
+                reply_id = message["interactive"]["button_reply"]["id"]
+            elif "list_reply" in message["interactive"]:
+                reply_id = message["interactive"]["list_reply"]["id"]
+            else:
+                return "ok", 200
+            
             print(f"🔘 Interactive reply: {reply_id}")
 
             if reply_id.startswith("lang_"):
@@ -568,51 +571,6 @@ def webhook():
             elif reply_id == "re_register":
                 user_states[sender] = {"awaiting_language": True}
                 send_language_buttons(sender)
-                return "ok", 200
-
-            elif reply_id == "continue":
-                lang = user_states.get(sender, {}).get("lang")
-                if not lang and user:
-                    lang = user[4]
-                    
-                if not lang:
-                    user_states[sender] = {"awaiting_language": True}
-                    send_language_buttons(sender)
-                    return "ok", 200
-                
-                # Send muscle group options with tracker button
-                text = {
-                    "en": "💪 Choose a muscle group:\n- Chest\n- Back\n- Biceps\n- Triceps\n- Shoulders\n- Legs\n- Abs",
-                    "es": "💪 Elige un grupo muscular:\n- Pecho\n- Espalda\n- Biceps\n- Triceps\n- Hombros\n- Piernas\n- Abdominales"
-                }
-                
-                buttons = {
-                    "en": [
-                        {"type": "reply", "reply": {"id": "view_web", "title": "Open Tracker"}}
-                    ],
-                    "es": [
-                        {"type": "reply", "reply": {"id": "view_web", "title": "Abrir Tracker"}}
-                    ]
-                }
-                
-                payload = {
-                    "messaging_product": "whatsapp",
-                    "to": sender,
-                    "type": "interactive",
-                    "interactive": {
-                        "type": "button",
-                        "body": {"text": text[lang]},
-                        "action": {
-                            "buttons": buttons[lang]
-                        }
-                    }
-                }
-                send_interactive(payload)
-                
-                user_states[sender] = {
-                    "lang": lang,
-                    "expecting_muscle": True
-                }
                 return "ok", 200
 
             # ADD THESE NEW HANDLERS
@@ -669,49 +627,51 @@ def webhook():
                 
                 return "ok", 200
 
-            elif reply_id == "start_over":
+            elif reply_id == "log_out":
+                lang = user_states.get(sender, {}).get("lang", "en")
+                msg = {
+                    "en": "👋 Logged out successfully! Type 'hi' anytime to start again.",
+                    "es": "👋 ¡Sesión cerrada exitosamente! Escribe 'hi' en cualquier momento para empezar de nuevo."
+                }
+                send_message(sender, msg[lang])
+                user_states.pop(sender, None)
+                return "ok", 200
+            
+            elif reply_id == "reregister":
                 lang = user_states.get(sender, {}).get("lang")
                 if not lang and user:
                     lang = user[4]
-                    
+                
+                # Reset user state for re-registration
+                user_states[sender] = {
+                    "lang": lang,
+                    "step": "name"
+                }
+                
+                msg = {
+                    "en": "Let's update your information! 📝\n\nWhat's your name?",
+                    "es": "¡Actualicemos tu información! 📝\n\n¿Cuál es tu nombre?"
+                }
+                send_message(sender, msg[lang])
+                return "ok", 200
+            
+            elif reply_id == "view_exercises":
+                lang = user_states.get(sender, {}).get("lang")
+                if not lang and user:
+                    lang = user[4]
+                
+                # Set state to expecting muscle group selection
                 user_states[sender] = {
                     "lang": lang,
                     "expecting_muscle": True
                 }
                 
-                # Send muscle group options with tracker button
+                # Send muscle group selection
                 text = {
-                    "en": "💪 Choose a muscle group:\n- Chest\n- Back\n- Biceps\n- Triceps\n- Shoulders\n- Legs\n- Abs",
-                    "es": "💪 Elige un grupo muscular:\n- Pecho\n- Espalda\n- Biceps\n- Triceps\n- Hombros\n- Piernas\n- Abdominales"
+                    "en": "💪 Choose a muscle group to view exercises:\n\n• Chest\n• Back\n• Biceps\n• Triceps\n• Shoulders\n• Legs\n• Abs\n• Swimming",
+                    "es": "💪 Elige un grupo muscular para ver ejercicios:\n\n• Pecho\n• Espalda\n• Bíceps\n• Tríceps\n• Hombros\n• Piernas\n• Abdominales\n• Natación"
                 }
-                
-                buttons = {
-                    "en": [
-                        {"type": "reply", "reply": {"id": "view_web", "title": "Open Tracker"}}
-                    ],
-                    "es": [
-                        {"type": "reply", "reply": {"id": "view_web", "title": "Abrir Tracker"}}
-                    ]
-                }
-                
-                payload = {
-                    "messaging_product": "whatsapp",
-                    "to": sender,
-                    "type": "interactive",
-                    "interactive": {
-                        "type": "button",
-                        "body": {"text": text[lang]},
-                        "action": {
-                            "buttons": buttons[lang]
-                        }
-                    }
-                }
-                send_interactive(payload)
-                return "ok", 200
-
-            elif reply_id == "log_out":
-                send_message(sender, "👋 Have a good one.")
-                user_states.pop(sender, None)
+                send_message(sender, text[lang])
                 return "ok", 200
 
         # Initialize user state for new users
