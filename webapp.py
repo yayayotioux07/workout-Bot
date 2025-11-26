@@ -300,6 +300,13 @@ def render_dashboard(name, workouts, records, stats):
             "es": "Abdominales",
             "emoji": "🎯",
             "color": "#30cfd0"
+        },
+        {
+            "key": "swimming",
+            "en": "Swimming",
+            "es": "Natación",
+            "emoji": "🏊",
+            "color": "#00d2ff"
         }
     ]
     
