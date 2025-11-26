@@ -580,11 +580,35 @@ def webhook():
                     send_language_buttons(sender)
                     return "ok", 200
                 
-                msg = {
-                    "en": "💪 Reply with a muscle group:\n- Chest\n- Back\n- Biceps\n- Triceps\n- Shoulders\n- Legs\n- Abs\n\n📊 Or type 'tracker' to log workouts",
-                    "es": "💪 Responde con un grupo muscular:\n- Pecho\n- Espalda\n- Biceps\n- Triceps\n- Hombros\n- Piernas\n- Abdominales\n\n📊 O escribe 'tracker' para abrir el rastreador"
+                # Send muscle group options with tracker button
+                text = {
+                    "en": "💪 Choose a muscle group:\n- Chest\n- Back\n- Biceps\n- Triceps\n- Shoulders\n- Legs\n- Abs",
+                    "es": "💪 Elige un grupo muscular:\n- Pecho\n- Espalda\n- Biceps\n- Triceps\n- Hombros\n- Piernas\n- Abdominales"
                 }
-                send_message(sender, msg[lang])
+                
+                buttons = {
+                    "en": [
+                        {"type": "reply", "reply": {"id": "view_web", "title": "Open Tracker"}}
+                    ],
+                    "es": [
+                        {"type": "reply", "reply": {"id": "view_web", "title": "Abrir Tracker"}}
+                    ]
+                }
+                
+                payload = {
+                    "messaging_product": "whatsapp",
+                    "to": sender,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "button",
+                        "body": {"text": text[lang]},
+                        "action": {
+                            "buttons": buttons[lang]
+                        }
+                    }
+                }
+                send_interactive(payload)
+                
                 user_states[sender] = {
                     "lang": lang,
                     "expecting_muscle": True
@@ -695,11 +719,33 @@ def webhook():
                 name = user_states[sender].get("name")
                 save_user(sender, name=name, email=text, registered=True, language=lang)
                 
-                msg = {
+                text_msg = {
                     "en": "✅ You're registered!\n\n💪 Choose a muscle group:\n- Chest\n- Back\n- Biceps\n- Triceps\n- Shoulders\n- Legs\n- Abs",
                     "es": "✅ ¡Estás registrado!\n\n💪 Elige un grupo muscular:\n- Pecho\n- Espalda\n- Biceps\n- Triceps\n- Hombros\n- Piernas\n- Abdominales"
                 }
-                send_message(sender, msg[lang])
+                
+                buttons = {
+                    "en": [
+                        {"type": "reply", "reply": {"id": "view_web", "title": "Open Tracker"}}
+                    ],
+                    "es": [
+                        {"type": "reply", "reply": {"id": "view_web", "title": "Abrir Tracker"}}
+                    ]
+                }
+                
+                payload = {
+                    "messaging_product": "whatsapp",
+                    "to": sender,
+                    "type": "interactive",
+                    "interactive": {
+                        "type": "button",
+                        "body": {"text": text_msg[lang]},
+                        "action": {
+                            "buttons": buttons[lang]
+                        }
+                    }
+                }
+                send_interactive(payload)
                 
                 user_states[sender] = {
                     "lang": lang,
