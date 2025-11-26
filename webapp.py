@@ -924,9 +924,22 @@ def log_exercise_form(muscle_group, exercise_name):
                 align-items: center;
                 gap: 8px;
                 cursor: pointer;
+                background: white;
+                padding: 10px 15px;
+                border-radius: 10px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                transition: all 0.3s;
             }}
             .meta-item:hover {{
                 color: #667eea;
+                box-shadow: 0 4px 10px rgba(102,126,234,0.2);
+                transform: translateY(-2px);
+            }}
+            .meta-item.clickable {{
+                border: 2px solid #e0e0e0;
+            }}
+            .meta-item.clickable:hover {{
+                border-color: #667eea;
             }}
             .date-picker {{
                 display: none;
@@ -936,6 +949,7 @@ def log_exercise_form(muscle_group, exercise_name):
                 font-size: 1em;
                 color: #333;
                 background: white;
+                cursor: pointer;
             }}
             .exercise-card {{
                 background: white;
@@ -1147,10 +1161,11 @@ def log_exercise_form(muscle_group, exercise_name):
         <div class="workout-info">
             <h1 class="workout-title">{exercise_name}</h1>
             <div class="workout-meta">
-                <div class="meta-item" onclick="toggleDatePicker()">
+                <div class="meta-item clickable" onclick="toggleDatePicker()" title="Click to change date">
                     <span>📅</span>
                     <span id="displayDate">{display_date}</span>
-                    <input type="date" id="datePicker" class="date-picker" value="{current_date}" onchange="updateDate(this)">
+                    <span style="color: #667eea; font-size: 0.8em;">▼</span>
+                    <input type="date" id="datePicker" class="date-picker" value="{current_date}" max="{current_date}" onchange="updateDate(this)">
                 </div>
                 <div class="meta-item">🏋️ {muscle_group.title()}</div>
             </div>
