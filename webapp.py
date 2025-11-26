@@ -665,7 +665,7 @@ def view_exercises(muscle_group):
         lang = session.get('language', 'en')
         
         cur.execute("""
-            SELECT name_en, name_es, equipment, image_url, gif_url 
+            SELECT DISTINCT name_en, name_es, equipment, image_url, gif_url 
             FROM exercises 
             WHERE LOWER(muscle_group) = LOWER(%s)
             ORDER BY name_en
