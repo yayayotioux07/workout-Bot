@@ -215,7 +215,7 @@ def dashboard():
         # Get recent workouts (last 30 days)
         cur.execute("""
             SELECT w.workout_date, w.muscle_group, 
-                   we.exercise_name, we.sets, we.reps, we.weight
+                   we.exercise_name, we.sets, we.reps, we.weight, we.id as exercise_id
             FROM workouts w
             JOIN workout_exercises we ON we.workout_id = w.id
             WHERE w.user_id = %s AND w.workout_date >= CURRENT_DATE - INTERVAL '30 days'
@@ -325,7 +325,7 @@ def render_dashboard(name, workouts, records, stats):
     workout_html = ""
     if workouts:
         current_date = None
-        for date, muscle, exercise, sets, reps, weight in workouts:
+        for date, muscle, exercise, sets, reps, weight, exercise_id in workouts:
             if date != current_date:
                 if current_date is not None:
                     workout_html += "</div>"
@@ -355,6 +355,7 @@ def render_dashboard(name, workouts, records, stats):
                     <div class="exercise-row">
                         <span class="exercise-name">{exercise}</span>
                         <span class="exercise-stats">{duration_str} • {reps} cal</span>
+                        <button class="delete-btn" onclick="deleteExercise({exercise_id})" title="Delete this exercise">🗑️</button>
                     </div>
                     """
                 else:  # Distance in meters
@@ -362,6 +363,7 @@ def render_dashboard(name, workouts, records, stats):
                     <div class="exercise-row">
                         <span class="exercise-name">{exercise}</span>
                         <span class="exercise-stats">{int(weight)}m • {reps} cal</span>
+                        <button class="delete-btn" onclick="deleteExercise({exercise_id})" title="Delete this exercise">🗑️</button>
                     </div>
                     """
             else:
@@ -369,6 +371,7 @@ def render_dashboard(name, workouts, records, stats):
                 <div class="exercise-row">
                     <span class="exercise-name">{exercise}</span>
                     <span class="exercise-stats">{sets} × {reps} @ {weight}kg</span>
+                    <button class="delete-btn" onclick="deleteExercise({exercise_id})" title="Delete this exercise">🗑️</button>
                 </div>
                 """
         
@@ -557,18 +560,38 @@ def render_dashboard(name, workouts, records, stats):
             .exercise-row {{
                 display: flex;
                 justify-content: space-between;
+                align-items: center;
                 padding: 12px;
                 background: #f8f9fa;
                 margin-bottom: 8px;
                 border-radius: 8px;
+                position: relative;
             }}
             .exercise-name {{
                 font-weight: 500;
                 color: #333;
+                flex: 1;
             }}
             .exercise-stats {{
                 color: #666;
                 font-family: 'Courier New', monospace;
+                margin-right: 10px;
+            }}
+            .delete-btn {{
+                background: #ff4444;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 1em;
+                transition: all 0.3s;
+                opacity: 0.7;
+            }}
+            .delete-btn:hover {{
+                opacity: 1;
+                background: #cc0000;
+                transform: scale(1.1);
             }}
             .record-item {{
                 display: flex;
@@ -673,6 +696,30 @@ def render_dashboard(name, workouts, records, stats):
                 </div>
             </div>
         </div>
+        
+        <script>
+            async function deleteExercise(exerciseId) {{
+                if (!confirm('Are you sure you want to delete this exercise?')) {{
+                    return;
+                }}
+                
+                try {{
+                    const response = await fetch(`/api/delete-exercise/${{exerciseId}}`, {{
+                        method: 'DELETE'
+                    }});
+                    
+                    if (response.ok) {{
+                        alert('✅ Exercise deleted successfully!');
+                        window.location.reload();
+                    }} else {{
+                        alert('❌ Error deleting exercise');
+                    }}
+                }} catch (error) {{
+                    console.error('Error:', error);
+                    alert('❌ Error deleting exercise');
+                }}
+            }}
+        </script>
     </body>
     </html>
     """
@@ -1980,6 +2027,59 @@ def get_workouts():
         
     except Exception as e:
         print(f"Error getting workouts: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/delete-exercise/<int:exercise_id>', methods=['DELETE'])
+def delete_exercise(exercise_id):
+    """API endpoint to delete a workout exercise"""
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        conn = connect_db()
+        cur = conn.cursor()
+        
+        # Verify the exercise belongs to the user before deleting
+        cur.execute("""
+            SELECT we.workout_id 
+            FROM workout_exercises we
+            JOIN workouts w ON w.id = we.workout_id
+            WHERE we.id = %s AND w.user_id = %s
+        """, (exercise_id, session['user_id']))
+        
+        result = cur.fetchone()
+        
+        if not result:
+            cur.close()
+            conn.close()
+            return jsonify({"error": "Exercise not found or unauthorized"}), 404
+        
+        workout_id = result[0]
+        
+        # Delete the exercise
+        cur.execute("DELETE FROM workout_exercises WHERE id = %s", (exercise_id,))
+        
+        # Check if this was the last exercise in the workout
+        cur.execute("""
+            SELECT COUNT(*) FROM workout_exercises WHERE workout_id = %s
+        """, (workout_id,))
+        
+        remaining_exercises = cur.fetchone()[0]
+        
+        # If no exercises left, delete the entire workout
+        if remaining_exercises == 0:
+            cur.execute("DELETE FROM workouts WHERE id = %s", (workout_id,))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({"success": True})
+        
+    except Exception as e:
+        print(f"Error deleting exercise: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 @app.route('/logout')
