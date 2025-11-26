@@ -851,6 +851,484 @@ def view_exercises(muscle_group):
         traceback.print_exc()
         return f"Error: {str(e)}", 500
 
+def render_swimming_log_form(muscle_group, exercise_name, current_date, display_date):
+    """Special logging form for swimming exercises with Duration/Distance/Type"""
+    
+    # Get stroke types for dropdown
+    stroke_types = ['Freestyle', 'Backstroke', 'Breaststroke', 'Butterfly']
+    
+    # Extract stroke type from exercise name if possible
+    default_stroke = 'Freestyle'
+    for stroke in stroke_types:
+        if stroke.lower() in exercise_name.lower():
+            default_stroke = stroke
+            break
+    
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Log {exercise_name}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+            body {{
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: #f5f7fa;
+                min-height: 100vh;
+                padding-bottom: 100px;
+            }}
+            .header {{
+                background: white;
+                padding: 15px 20px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }}
+            .header-content {{
+                max-width: 600px;
+                margin: 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }}
+            .back-btn {{
+                background: none;
+                border: none;
+                color: #00d2ff;
+                font-size: 1.1em;
+                cursor: pointer;
+                padding: 5px;
+            }}
+            .save-btn {{
+                background: #00d2ff;
+                color: white;
+                border: none;
+                padding: 8px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+            }}
+            .workout-info {{
+                max-width: 600px;
+                margin: 20px auto;
+                padding: 0 20px;
+            }}
+            .workout-title {{
+                font-size: 1.8em;
+                color: #333;
+                margin-bottom: 10px;
+                font-weight: bold;
+                line-height: 1.2;
+            }}
+            .workout-meta {{
+                display: flex;
+                gap: 20px;
+                color: #666;
+                font-size: 0.95em;
+                margin-bottom: 30px;
+                flex-wrap: wrap;
+            }}
+            .meta-item {{
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+                background: white;
+                padding: 10px 15px;
+                border-radius: 10px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                transition: all 0.3s;
+                position: relative;
+            }}
+            .meta-item:hover {{
+                color: #00d2ff;
+                box-shadow: 0 4px 10px rgba(0,210,255,0.2);
+                transform: translateY(-2px);
+            }}
+            .meta-item.clickable {{
+                border: 2px solid #e0e0e0;
+            }}
+            .meta-item.clickable:hover {{
+                border-color: #00d2ff;
+            }}
+            .date-picker {{
+                position: absolute;
+                opacity: 0;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                cursor: pointer;
+                pointer-events: none;
+            }}
+            .exercise-card {{
+                background: white;
+                max-width: 600px;
+                margin: 0 auto 20px auto;
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            }}
+            .exercise-header {{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }}
+            .exercise-name {{
+                color: #00d2ff;
+                font-size: 1.2em;
+                font-weight: 600;
+            }}
+            .toggle-container {{
+                display: flex;
+                background: #f0f0f0;
+                border-radius: 10px;
+                padding: 4px;
+                margin-bottom: 25px;
+            }}
+            .toggle-btn {{
+                flex: 1;
+                padding: 10px 20px;
+                border: none;
+                background: transparent;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                color: #666;
+                transition: all 0.3s;
+            }}
+            .toggle-btn.active {{
+                background: white;
+                color: #00d2ff;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }}
+            .form-group {{
+                margin-bottom: 20px;
+            }}
+            .form-label {{
+                display: block;
+                color: #666;
+                font-weight: 600;
+                margin-bottom: 8px;
+                font-size: 0.95em;
+            }}
+            .time-inputs {{
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }}
+            .time-input {{
+                flex: 1;
+                background: #f8f9fa;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 12px;
+                text-align: center;
+                font-size: 1.1em;
+                font-weight: 500;
+                color: #333;
+            }}
+            .time-input:focus {{
+                outline: none;
+                border-color: #00d2ff;
+                background: white;
+            }}
+            .time-label {{
+                color: #999;
+                font-size: 0.9em;
+                font-weight: 600;
+            }}
+            .distance-input {{
+                width: 100%;
+                background: #f8f9fa;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 12px;
+                text-align: center;
+                font-size: 1.1em;
+                font-weight: 500;
+                color: #333;
+            }}
+            .distance-input:focus {{
+                outline: none;
+                border-color: #00d2ff;
+                background: white;
+            }}
+            .type-selector {{
+                width: 100%;
+                background: #f8f9fa;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 12px;
+                font-size: 1em;
+                font-weight: 500;
+                color: #333;
+                cursor: pointer;
+            }}
+            .type-selector:focus {{
+                outline: none;
+                border-color: #00d2ff;
+                background: white;
+            }}
+            .calories-display {{
+                background: linear-gradient(135deg, #00d2ff 0%, #0099cc 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                text-align: center;
+                margin-top: 20px;
+            }}
+            .calories-number {{
+                font-size: 2.5em;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }}
+            .calories-label {{
+                font-size: 0.9em;
+                opacity: 0.9;
+            }}
+            .bottom-bar {{
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 15px 20px;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                max-width: 600px;
+                margin: 0 auto;
+            }}
+            .finish-btn {{
+                width: 100%;
+                background: linear-gradient(135deg, #00d2ff 0%, #0099cc 100%);
+                color: white;
+                border: none;
+                padding: 15px;
+                border-radius: 10px;
+                font-size: 1.1em;
+                font-weight: 600;
+                cursor: pointer;
+            }}
+            
+            @media (max-width: 600px) {{
+                .workout-info {{
+                    padding: 0 15px;
+                }}
+                .workout-title {{
+                    font-size: 1.4em;
+                }}
+                .workout-meta {{
+                    gap: 15px;
+                    font-size: 0.9em;
+                }}
+                .exercise-card {{
+                    margin: 0 15px 20px 15px;
+                    padding: 15px;
+                }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="header-content">
+                <button class="back-btn" onclick="history.back()">✕ Cancel</button>
+                <button class="save-btn" onclick="saveWorkout()">Save</button>
+            </div>
+        </div>
+        
+        <div class="workout-info">
+            <h1 class="workout-title">🏊 {exercise_name}</h1>
+            <div class="workout-meta">
+                <div class="meta-item clickable" onclick="toggleDatePicker()" title="Click to change date">
+                    <span>📅</span>
+                    <span id="displayDate">{display_date}</span>
+                    <span style="color: #00d2ff; font-size: 0.8em;">▼</span>
+                    <input type="date" id="datePicker" class="date-picker" value="{current_date}" max="{current_date}" onchange="updateDate(this)">
+                </div>
+                <div class="meta-item">🏊 Swimming</div>
+            </div>
+        </div>
+        
+        <div class="exercise-card">
+            <div class="exercise-header">
+                <span class="exercise-name">{exercise_name}</span>
+            </div>
+            
+            <div class="toggle-container">
+                <button class="toggle-btn active" id="durationBtn" onclick="setMode('duration')">✓ Duration</button>
+                <button class="toggle-btn" id="distanceBtn" onclick="setMode('distance')">Distance</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Type</label>
+                <select class="type-selector" id="strokeType">
+                    <option value="Freestyle" {"selected" if default_stroke == "Freestyle" else ""}>Freestyle</option>
+                    <option value="Backstroke" {"selected" if default_stroke == "Backstroke" else ""}>Backstroke</option>
+                    <option value="Breaststroke" {"selected" if default_stroke == "Breaststroke" else ""}>Breaststroke</option>
+                    <option value="Butterfly" {"selected" if default_stroke == "Butterfly" else ""}>Butterfly</option>
+                </select>
+            </div>
+            
+            <div id="durationSection">
+                <div class="form-group">
+                    <label class="form-label">Duration</label>
+                    <div class="time-inputs">
+                        <input type="number" id="hours" class="time-input" placeholder="0" min="0" max="23" value="0" oninput="calculateCalories()">
+                        <span class="time-label">hours</span>
+                        <input type="number" id="minutes" class="time-input" placeholder="0" min="0" max="59" value="30" oninput="calculateCalories()">
+                        <span class="time-label">min</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="distanceSection" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Distance (meters)</label>
+                    <input type="number" id="distance" class="distance-input" placeholder="0" min="0" step="50" oninput="calculateCalories()">
+                </div>
+            </div>
+            
+            <div class="calories-display">
+                <div class="calories-number" id="caloriesDisplay">519</div>
+                <div class="calories-label">calories burned</div>
+            </div>
+        </div>
+        
+        <div class="bottom-bar">
+            <button class="finish-btn" onclick="saveWorkout()">Finish Workout 💪</button>
+        </div>
+        
+        <script>
+            let selectedDate = '{current_date}';
+            let currentMode = 'duration';
+            
+            function toggleDatePicker() {{
+                const picker = document.getElementById('datePicker');
+                if (picker.showPicker) {{
+                    try {{
+                        picker.showPicker();
+                    }} catch (e) {{
+                        picker.focus();
+                        picker.click();
+                    }}
+                }} else {{
+                    picker.focus();
+                    picker.click();
+                }}
+            }}
+            
+            function updateDate(picker) {{
+                selectedDate = picker.value;
+                const date = new Date(picker.value + 'T00:00:00');
+                const options = {{ year: 'numeric', month: 'short', day: 'numeric' }};
+                document.getElementById('displayDate').textContent = date.toLocaleDateString('en-US', options);
+            }}
+            
+            function setMode(mode) {{
+                currentMode = mode;
+                const durationBtn = document.getElementById('durationBtn');
+                const distanceBtn = document.getElementById('distanceBtn');
+                const durationSection = document.getElementById('durationSection');
+                const distanceSection = document.getElementById('distanceSection');
+                
+                if (mode === 'duration') {{
+                    durationBtn.classList.add('active');
+                    distanceBtn.classList.remove('active');
+                    durationSection.style.display = 'block';
+                    distanceSection.style.display = 'none';
+                }} else {{
+                    distanceBtn.classList.add('active');
+                    durationBtn.classList.remove('active');
+                    distanceSection.style.display = 'block';
+                    durationSection.style.display = 'none';
+                }}
+                calculateCalories();
+            }}
+            
+            function calculateCalories() {{
+                const strokeType = document.getElementById('strokeType').value;
+                let calories = 0;
+                
+                // Approximate calories per minute for different strokes (for 70kg person)
+                const caloriesPerMinute = {{
+                    'Freestyle': 11,
+                    'Backstroke': 9,
+                    'Breaststroke': 10,
+                    'Butterfly': 13
+                }};
+                
+                if (currentMode === 'duration') {{
+                    const hours = parseInt(document.getElementById('hours').value) || 0;
+                    const minutes = parseInt(document.getElementById('minutes').value) || 0;
+                    const totalMinutes = (hours * 60) + minutes;
+                    calories = Math.round(totalMinutes * caloriesPerMinute[strokeType]);
+                }} else {{
+                    const distance = parseInt(document.getElementById('distance').value) || 0;
+                    // Approximate: 100m takes about 2 minutes for average swimmer
+                    const estimatedMinutes = (distance / 100) * 2;
+                    calories = Math.round(estimatedMinutes * caloriesPerMinute[strokeType]);
+                }}
+                
+                document.getElementById('caloriesDisplay').textContent = calories;
+            }}
+            
+            // Calculate initial calories
+            calculateCalories();
+            
+            async function saveWorkout() {{
+                const strokeType = document.getElementById('strokeType').value;
+                let duration = 0;
+                let distance = 0;
+                
+                if (currentMode === 'duration') {{
+                    const hours = parseInt(document.getElementById('hours').value) || 0;
+                    const minutes = parseInt(document.getElementById('minutes').value) || 0;
+                    duration = (hours * 60) + minutes;
+                    
+                    if (duration === 0) {{
+                        alert('⚠️ Please enter a duration!');
+                        return;
+                    }}
+                }} else {{
+                    distance = parseInt(document.getElementById('distance').value) || 0;
+                    
+                    if (distance === 0) {{
+                        alert('⚠️ Please enter a distance!');
+                        return;
+                    }}
+                }}
+                
+                const calories = parseInt(document.getElementById('caloriesDisplay').textContent);
+                
+                const response = await fetch('/api/log-swimming-workout', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{
+                        exercise_name: '{exercise_name}',
+                        stroke_type: strokeType,
+                        mode: currentMode,
+                        duration: duration,
+                        distance: distance,
+                        calories: calories,
+                        workout_date: selectedDate
+                    }})
+                }});
+                
+                if (response.ok) {{
+                    alert('✅ Workout logged successfully!');
+                    window.location.href = '/dashboard';
+                }} else {{
+                    alert('❌ Error logging workout');
+                }}
+            }}
+        </script>
+    </body>
+    </html>
+    """
+
 @app.route('/log-exercise/<muscle_group>/<exercise_name>')
 def log_exercise_form(muscle_group, exercise_name):
     """Detailed exercise logging form similar to fitness apps"""
@@ -860,6 +1338,12 @@ def log_exercise_form(muscle_group, exercise_name):
     from datetime import datetime
     current_date = datetime.now().strftime('%Y-%m-%d')
     display_date = datetime.now().strftime('%b %d, %Y')
+    
+    # Check if this is a swimming exercise
+    is_swimming = muscle_group.lower() == 'swimming'
+    
+    if is_swimming:
+        return render_swimming_log_form(muscle_group, exercise_name, current_date, display_date)
     
     return f"""
     <!DOCTYPE html>
@@ -1380,6 +1864,57 @@ def api_log_workout():
         
     except Exception as e:
         print(f"Error logging workout: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/log-swimming-workout', methods=['POST'])
+def api_log_swimming_workout():
+    """API endpoint to log swimming workout"""
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        data = request.json
+        exercise_name = data['exercise_name']
+        stroke_type = data['stroke_type']
+        mode = data['mode']
+        duration = data.get('duration', 0)  # in minutes
+        distance = data.get('distance', 0)  # in meters
+        calories = data.get('calories', 0)
+        workout_date = data.get('workout_date', datetime.now().strftime('%Y-%m-%d'))
+        
+        conn = connect_db()
+        cur = conn.cursor()
+        
+        # Create workout
+        cur.execute("""
+            INSERT INTO workouts (user_id, workout_date, muscle_group)
+            VALUES (%s, %s, %s)
+            RETURNING id
+        """, (session['user_id'], workout_date, 'swimming'))
+        
+        workout_id = cur.fetchone()[0]
+        
+        # Store swimming workout data
+        # For swimming, we'll use the weight field for duration (minutes) or distance (meters)
+        # and reps field for calories
+        value = duration if mode == 'duration' else distance
+        
+        cur.execute("""
+            INSERT INTO workout_exercises 
+            (workout_id, exercise_name, sets, reps, weight, order_index)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (workout_id, f"{stroke_type} Swimming", 1, calories, value, 0))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({"success": True})
+        
+    except Exception as e:
+        print(f"Error logging swimming workout: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
