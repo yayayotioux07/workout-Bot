@@ -267,33 +267,20 @@ async def send_image_async(session, to, image_url, caption):
 def send_workout_logging_options(to, lang):
     """Send main menu options"""
     text = {
-        "en": "What would you like to do?",
-        "es": "¿Qué te gustaría hacer?"
+        "en": "💪 What would you like to do?\n\nType 'logout' anytime to end your session.",
+        "es": "💪 ¿Qué te gustaría hacer?\n\nEscribe 'logout' en cualquier momento para cerrar sesión."
     }
     
-    # WhatsApp allows max 3 buttons, so we'll use a list message instead for 4 options
-    sections = {
+    buttons = {
         "en": [
-            {
-                "title": "Menu Options",
-                "rows": [
-                    {"id": "reregister", "title": "Re-Register", "description": "Update your information"},
-                    {"id": "view_exercises", "title": "View Exercises", "description": "Browse exercise library"},
-                    {"id": "view_web", "title": "Open Dashboard", "description": "Track your workouts"},
-                    {"id": "log_out", "title": "Log Out", "description": "End your session"}
-                ]
-            }
+            {"type": "reply", "reply": {"id": "view_exercises", "title": "View Exercises"}},
+            {"type": "reply", "reply": {"id": "view_web", "title": "Open Dashboard"}},
+            {"type": "reply", "reply": {"id": "reregister", "title": "Re-Register"}}
         ],
         "es": [
-            {
-                "title": "Opciones del Menú",
-                "rows": [
-                    {"id": "reregister", "title": "Re-Registrarse", "description": "Actualizar tu información"},
-                    {"id": "view_exercises", "title": "Ver Ejercicios", "description": "Explorar biblioteca"},
-                    {"id": "view_web", "title": "Abrir Dashboard", "description": "Rastrear entrenamientos"},
-                    {"id": "log_out", "title": "Cerrar Sesión", "description": "Terminar tu sesión"}
-                ]
-            }
+            {"type": "reply", "reply": {"id": "view_exercises", "title": "Ver Ejercicios"}},
+            {"type": "reply", "reply": {"id": "view_web", "title": "Abrir Dashboard"}},
+            {"type": "reply", "reply": {"id": "reregister", "title": "Re-Registrarse"}}
         ]
     }
     
@@ -302,12 +289,10 @@ def send_workout_logging_options(to, lang):
         "to": to,
         "type": "interactive",
         "interactive": {
-            "type": "list",
-            "header": {"type": "text", "text": "💪 Workout Bot"},
+            "type": "button",
             "body": {"text": text[lang]},
             "action": {
-                "button": "Menu" if lang == "en" else "Menú",
-                "sections": sections[lang]
+                "buttons": buttons[lang]
             }
         }
     }
@@ -736,6 +721,17 @@ def webhook():
                     "registered": True
                 }
                 return "ok", 200
+
+        # Handle logout command via text
+        if msg_type == "text" and text.lower() in ["logout", "log out", "salir", "cerrar sesión", "cerrar sesion"]:
+            lang = user_states.get(sender, {}).get("lang", "en")
+            msg = {
+                "en": "👋 Logged out successfully! Type 'hi' anytime to start again.",
+                "es": "👋 ¡Sesión cerrada exitosamente! Escribe 'hi' en cualquier momento para empezar de nuevo."
+            }
+            send_message(sender, msg[lang])
+            user_states.pop(sender, None)
+            return "ok", 200
 
         # Handle muscle group selection - MOVED OUTSIDE and changed to if
         if msg_type == "text" and user_states[sender].get("expecting_muscle"):
