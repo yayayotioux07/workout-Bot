@@ -338,12 +338,39 @@ def render_dashboard(name, workouts, records, stats):
                 """
                 current_date = date
             
-            workout_html += f"""
-            <div class="exercise-row">
-                <span class="exercise-name">{exercise}</span>
-                <span class="exercise-stats">{sets} × {reps} @ {weight}kg</span>
-            </div>
-            """
+            # Check if this is a swimming exercise
+            is_swimming = muscle.lower() == 'swimming' if muscle else False
+            
+            if is_swimming:
+                # For swimming: weight field contains duration (minutes) or distance (meters)
+                # reps field contains calories
+                if weight < 1000:  # Assume values < 1000 are duration in minutes
+                    hours = int(weight // 60)
+                    mins = int(weight % 60)
+                    if hours > 0:
+                        duration_str = f"{hours}h {mins}min"
+                    else:
+                        duration_str = f"{mins}min"
+                    workout_html += f"""
+                    <div class="exercise-row">
+                        <span class="exercise-name">{exercise}</span>
+                        <span class="exercise-stats">{duration_str} • {reps} cal</span>
+                    </div>
+                    """
+                else:  # Distance in meters
+                    workout_html += f"""
+                    <div class="exercise-row">
+                        <span class="exercise-name">{exercise}</span>
+                        <span class="exercise-stats">{int(weight)}m • {reps} cal</span>
+                    </div>
+                    """
+            else:
+                workout_html += f"""
+                <div class="exercise-row">
+                    <span class="exercise-name">{exercise}</span>
+                    <span class="exercise-stats">{sets} × {reps} @ {weight}kg</span>
+                </div>
+                """
         
         if current_date is not None:
             workout_html += "</div>"
