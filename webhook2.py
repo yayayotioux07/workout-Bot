@@ -653,8 +653,8 @@ def webhook():
                 
                 # Send muscle group selection
                 text = {
-                    "en": "💪 Choose a muscle group to view exercises:\n\n• Chest\n• Back\n• Biceps\n• Triceps\n• Shoulders\n• Legs\n• Abs\n• Swimming",
-                    "es": "💪 Elige un grupo muscular para ver ejercicios:\n\n• Pecho\n• Espalda\n• Bíceps\n• Tríceps\n• Hombros\n• Piernas\n• Abdominales\n• Natación"
+                    "en": "💪 Choose a muscle group to view exercises:\n\n• Chest\n• Back\n• Biceps\n• Triceps\n• Shoulders\n• Legs\n• Abs",
+                    "es": "💪 Elige un grupo muscular para ver ejercicios:\n\n• Pecho\n• Espalda\n• Bíceps\n• Tríceps\n• Hombros\n• Piernas\n• Abdominales"
                 }
                 send_message(sender, text[lang])
                 return "ok", 200
