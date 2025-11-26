@@ -929,6 +929,7 @@ def log_exercise_form(muscle_group, exercise_name):
                 border-radius: 10px;
                 box-shadow: 0 2px 5px rgba(0,0,0,0.05);
                 transition: all 0.3s;
+                position: relative;
             }}
             .meta-item:hover {{
                 color: #667eea;
@@ -942,7 +943,7 @@ def log_exercise_form(muscle_group, exercise_name):
                 border-color: #667eea;
             }}
             .date-picker {{
-                display: none;
+                position: absolute;
                 border: 2px solid #667eea;
                 border-radius: 8px;
                 padding: 8px;
@@ -950,6 +951,8 @@ def log_exercise_form(muscle_group, exercise_name):
                 color: #333;
                 background: white;
                 cursor: pointer;
+                z-index: 1000;
+                margin-top: 5px;
             }}
             .exercise-card {{
                 background: white;
@@ -1221,13 +1224,8 @@ def log_exercise_form(muscle_group, exercise_name):
             
             function toggleDatePicker() {{
                 const picker = document.getElementById('datePicker');
-                if (picker.style.display === 'none' || picker.style.display === '') {{
-                    picker.style.display = 'inline-block';
-                    picker.focus();
-                    picker.click();
-                }} else {{
-                    picker.style.display = 'none';
-                }}
+                // Just trigger the native date picker
+                picker.showPicker();
             }}
             
             function updateDate(picker) {{
@@ -1235,7 +1233,6 @@ def log_exercise_form(muscle_group, exercise_name):
                 const date = new Date(picker.value + 'T00:00:00');
                 const options = {{ year: 'numeric', month: 'short', day: 'numeric' }};
                 document.getElementById('displayDate').textContent = date.toLocaleDateString('en-US', options);
-                picker.style.display = 'none';
             }}
             
             function toggleCheck(element) {{
