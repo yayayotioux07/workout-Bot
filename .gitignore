@@ -16,3 +16,5 @@ env/
 # Local development
 .env.local
 .env.development
+# Environment variables
+.env
